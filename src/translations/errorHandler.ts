@@ -1,0 +1,67 @@
+export const errorMessages = {
+  en: {
+    
+    INTERNAL_SERVER_ERROR: "Internal Server Error",
+    JWT_EXPIRED: "Please login again.",
+    INVALID_SIGNATURE: "Invalid token.",
+    ALREADY_EXISTS: (key: string) => `${key} already exists.`,
+    NOT_FOUND: (key: string) => `${key} not found.`,
+    INVALID: (key: string) => `Invalid ${key}.`,
+    WRONG: (key: string) => `Wrong ${key}.`,
+    otpNotVerifiedBody:
+      'Your account is not verified yet. Please verify your email using the OTP sent to your email address to log in.',
+    NEW_PASSWORD_SAME: "New password must be different from the old password.",
+    userNotExistOrEmailNotVerified: "User does not exist or email not verified",
+    otpSentForPasswordReset: "OTP sent to your email for password reset",
+    STATUS_NOT_ALLOWED: (role: string) => `Status is not allowed for this role: ${role}`,
+    ACCOUNT_SUSPENDED: "Your account has been suspended. Please contact support.",
+    PASSWORD_RESET_SUCCESS: "Password reset successfully. You can now log in with your new password.",
+    OTP_NOT_VERIFIED: "Please verify your OTP before resetting the password.",
+    // NEW_PASSWORD_SAME: "New password cannot be the same as the old password.",
+    USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED: "User does not exist or email not verified."
+  },
+  fr: {
+    PASSWORD_RESET_SUCCESS: "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+    OTP_NOT_VERIFIED: "Veuillez vérifier votre OTP avant de réinitialiser le mot de passe.",
+    NEW_PASSWORD_SAME: "Le nouveau mot de passe ne peut pas être identique à l'ancien.",
+    USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED: "L'utilisateur n'existe pas ou l'e-mail n'a pas été vérifié.",
+    INTERNAL_SERVER_ERROR: "Erreur interne du serveur",
+    JWT_EXPIRED: "Veuillez vous reconnecter.",
+    INVALID_SIGNATURE: "Jeton invalide.",
+    ALREADY_EXISTS: (key: string) => `${key} existe déjà.`,
+    NOT_FOUND: (key: string) => `${key} introuvable.`,
+    INVALID: (key: string) => `${key} invalide.`,
+    WRONG: (key: string) => `${key} incorrect(e).`,
+    otpNotVerifiedBody:
+      "Votre compte n'est pas encore vérifié. Veuillez vérifier votre e-mail en utilisant le code OTP envoyé à votre adresse e-mail pour vous connecter.",
+    // NEW_PASSWORD_SAME: "Le nouveau mot de passe doit être différent de l'ancien.",
+    userNotExistOrEmailNotVerified: "L'utilisateur n'existe pas ou l'e-mail n'a pas été vérifié",
+    otpSentForPasswordReset: "OTP envoyé à votre e-mail pour réinitialiser le mot de passe",
+    STATUS_NOT_ALLOWED: (role: string) => `Le statut n'est pas autorisé pour ce rôle : ${role}`,
+    ACCOUNT_SUSPENDED: "Votre compte a été suspendu. Veuillez contacter le support.",
+  },
+
+  ar: {
+    PASSWORD_RESET_SUCCESS: "تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.",
+    OTP_NOT_VERIFIED: "يرجى التحقق من OTP الخاص بك قبل إعادة تعيين كلمة المرور.",
+    // NEW_PASSWORD_SAME: "لا يمكن أن تكون كلمة المرور الجديدة هي نفسها القديمة.",
+    USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED: "المستخدم غير موجود أو البريد الإلكتروني غير مفعل.",
+    INTERNAL_SERVER_ERROR: "خطأ داخلي في الخادم",
+    JWT_EXPIRED: "يرجى تسجيل الدخول مرة أخرى.",
+    INVALID_SIGNATURE: "رمز غير صالح.",
+    ALREADY_EXISTS: (key: string) => `${key} موجود بالفعل.`,
+    NOT_FOUND: (key: string) => `${key} غير موجود.`,
+    INVALID: (key: string) => `${key} غير صالح.`,
+    WRONG: (key: string) => `${key} غير صحيح.`,
+    otpNotVerifiedBody:
+      "حسابك لم يتم التحقق منه بعد. يرجى التحقق من بريدك الإلكتروني باستخدام رمز OTP المرسل إلى عنوان بريدك الإلكتروني لتسجيل الدخول.",
+    NEW_PASSWORD_SAME: "يجب أن تكون كلمة المرور الجديدة مختلفة عن القديمة.",
+    userNotExistOrEmailNotVerified: "المستخدم غير موجود أو البريد الإلكتروني غير مفعل",
+    otpSentForPasswordReset: "تم إرسال رمز OTP إلى بريدك الإلكتروني لإعادة تعيين كلمة المرور",
+    STATUS_NOT_ALLOWED: (role: string) => `الحالة غير مسموحة لهذا الدور: ${role}`,
+    ACCOUNT_SUSPENDED: "تم تعليق حسابك. يرجى الاتصال بالدعم.",
+  },
+} as const;
+
+export type Language = keyof typeof errorMessages;
+export type ErrorKey = keyof typeof errorMessages[Language];
