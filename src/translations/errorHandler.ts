@@ -1,6 +1,6 @@
 export const errorMessages = {
   en: {
-    
+
     INTERNAL_SERVER_ERROR: "Internal Server Error",
     JWT_EXPIRED: "Please login again.",
     INVALID_SIGNATURE: "Invalid token.",
@@ -18,9 +18,12 @@ export const errorMessages = {
     PASSWORD_RESET_SUCCESS: "Password reset successfully. You can now log in with your new password.",
     OTP_NOT_VERIFIED: "Please verify your OTP before resetting the password.",
     // NEW_PASSWORD_SAME: "New password cannot be the same as the old password.",
-    USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED: "User does not exist or email not verified."
+    USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED: "User does not exist or email not verified.",
+    NUMBEROFQUESTIONSNOTMACTHED: "numberOfQuestions does not match the length of questions array",
+
   },
   fr: {
+    NUMBEROFQUESTIONSNOTMACTHED:"Le nombre de questions ne correspond pas à la longueur du tableau des questions.",
     PASSWORD_RESET_SUCCESS: "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
     OTP_NOT_VERIFIED: "Veuillez vérifier votre OTP avant de réinitialiser le mot de passe.",
     NEW_PASSWORD_SAME: "Le nouveau mot de passe ne peut pas être identique à l'ancien.",
@@ -42,6 +45,7 @@ export const errorMessages = {
   },
 
   ar: {
+    NUMBEROFQUESTIONSNOTMACTHED:"عدد الأسئلة لا يتطابق مع طول مصفوفة الأسئلة.",
     PASSWORD_RESET_SUCCESS: "تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.",
     OTP_NOT_VERIFIED: "يرجى التحقق من OTP الخاص بك قبل إعادة تعيين كلمة المرور.",
     // NEW_PASSWORD_SAME: "لا يمكن أن تكون كلمة المرور الجديدة هي نفسها القديمة.",
