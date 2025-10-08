@@ -37,7 +37,7 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
     if (subject) filter.subject = subject;
     if (type) filter.type = type;
 
-    const quizzes = await QuizTestModel.find(filter).sort({ createdAt: -1 });
+    const quizzes = await QuizTestModel.find(filter).sort({ createdAt: -1 }).select({_id:1,name:1,time:1});
     SUCCESS(res,200,successMessages[language].QUIZZES_FETCHED,{quizzes})
   } catch (error) {
     next(error);

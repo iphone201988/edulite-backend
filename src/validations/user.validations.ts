@@ -42,6 +42,19 @@ export const registerSchema = {body:Joi.object({
       .messages({
         "any.only": `Role must be one of: ${Object.keys(roleType).join(", ")}`,
       }),
+      countryCode: Joi.string()
+      .pattern(/^\+\d{1,4}$/) // e.g. +1, +44, +91
+      .required()
+      .messages({
+        "string.pattern.base": "countryCode must be in format like +1, +44, +91",
+        "any.required": "countryCode is required",
+      }),
+     phone: Joi.string()
+      .required()
+      .messages({
+        "string.pattern.base": "phone must be in E.164 format (e.g. +14155552671)",
+        "any.required": "phone is required",
+      }),
   })};
   
 

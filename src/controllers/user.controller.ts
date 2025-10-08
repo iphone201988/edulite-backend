@@ -11,7 +11,7 @@ import { IUser } from "../types/user.types";
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-        const { name, dob, email, password, deviceToken, deviceType, language = "en", role } = req.body;
+        const { name, dob, email, password, deviceToken, deviceType, language = "en", role, phone,countryCode} = req.body;
         const lowercaseEmail = email?.toLowerCase().trim();
         const existingUser = await findUserByEmail(lowercaseEmail);
 
@@ -41,8 +41,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
                     name,
                     // lastName,
                     dob: new Date(dob),
-                    // countryCode,
-                    // phoneNumber,
+                    countryCode,
+                    phone,
                     password: hashedPassword,
                     email: lowercaseEmail,
                     otp,
@@ -55,6 +55,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
             } else {
 
                 user = await User.create({
+                    countryCode,
+                    phone,
                     role,
                     name,
                     // lastName,
@@ -224,7 +226,7 @@ const loginUser = async (
             return SUCCESS(
                 res,
                 200,
-                successMessages[language].USER_LOGIN,
+                successMessages[language].OTP_SENT,
                 {
                     user: userData(user),
                     // token

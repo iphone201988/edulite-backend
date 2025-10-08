@@ -4,6 +4,8 @@ import { IUser } from "../types/user.types";
 
 const userSchema = new Schema<IUser>(
   {
+    phone:{type:String,default:""},
+    countryCode:{type:String,default:""},
     profilePicture: { type: String , default:"" },
     isEmailVerified: { type: Boolean, default: false },
     socialLinkedAccounts: [{ provider: { type: Number, enum: [SocialLoginType.APPLE, SocialLoginType.GOOGLE] }, id: { type: String } }],

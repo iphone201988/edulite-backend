@@ -6,6 +6,8 @@ export interface ISocialLinkedAccount {
 }
 
 export interface IUser extends Document {
+    phone?:string;
+    countryCode?:string;
     profilePicture?:string;
     status?: string;
     address:string,
