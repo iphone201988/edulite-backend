@@ -1,21 +1,34 @@
 import { Request, Response, NextFunction } from "express";
 import QuizTestModel from "../models/testQuiz.model";
 import UserResponseModel from "../models/userAnswer.model";
+import ErrorHandler from "../utils/errorHandler";
+import { errorMessages } from "../translations/errorHandler";
+import { SUCCESS } from "../utils/helpers";
+import { successMessages } from "../translations/successMessages.translations";
 
 export const submitUserResponse = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { quizId, answers, timeTaken } = req.body;
+    const language = req.language || "en";
     const userId = req.userId;
 
     const quiz: any = await QuizTestModel.findById(quizId);
-    if (!quiz) return res.status(404).json({ message: "Quiz/Test not found" });
+    if (!quiz) {
+      return next(
+        new ErrorHandler(errorMessages[language].NOT_FOUND("Quiz/Test"), 404)
+      )
+    }
 
     let correctCount = 0;
     let incorrectCount = 0;
 
     const processedAnswers = answers.map((ans: any) => {
       const question = quiz.questions.find(q => q._id.toString() === ans.questionId);
-      if (!question) throw new Error("Invalid questionId provided");
+      if (!question) {
+        return next(
+          new ErrorHandler(errorMessages[language].INVALID("Quiz/Test"), 404)
+        )
+      }
 
       const isCorrect = question.options.find(opt => opt._id.toString() === ans.selectedOptionId)?.text === question.answer;
       if (isCorrect) correctCount++;
@@ -46,8 +59,7 @@ export const submitUserResponse = async (req: Request, res: Response, next: Next
       },
       { new: true, upsert: true, runValidators: true }
     );
-
-    res.status(201).json(userResponse);
+    SUCCESS(res, 200, successMessages[language].USER_RESPONSE_SUBMITTED, { userResponse })
   } catch (error) {
     next(error);
   }
