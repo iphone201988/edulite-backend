@@ -43,8 +43,10 @@ export const addCreativeProjectSchema = {body:Joi.object({
         }),
     time: Joi.string()
         .trim()
-        .optional()
+        .required()
         .messages({
             "string.base": "Time must be a string",
+            "string.empty": "Time is required",
+            "any.required": "Time is required",
         }),
 })};
