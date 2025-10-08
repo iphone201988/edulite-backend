@@ -19,7 +19,7 @@ export const submitUserResponse = async (req: Request, res: Response, next: Next
       )
     }
 
-    let correctCount = 0;
+    let correctCount =  0;
     let incorrectCount = 0;
 
     const processedAnswers = answers.map((ans: any) => {
