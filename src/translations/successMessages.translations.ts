@@ -1,5 +1,6 @@
 export const successMessages = {
     en: {
+        CREATIVE_PROJECT_FETCHED: "Creative project fetched successfully",
         CREATIVE_PROJECTS_FETCHED: "Creative projects fetched successfully",
         CREATIVE_PROJECT_CREATED: "Creative project created successfully",
         GRADE_FETCHED: "Grade fetched successfully",
@@ -29,6 +30,7 @@ export const successMessages = {
         GRADES_FETCHED: "Grades fetched successfully",
     },
     fr: {
+        CREATIVE_PROJECT_FETCHED: "Projet créatif récupéré avec succès",
         CREATIVE_PROJECTS_FETCHED: "Projets créatifs récupérés avec succès",
         CREATIVE_PROJECT_CREATED: "Projet créatif créé avec succès",
         GRADE_FETCHED: "Niveau récupéré avec succès",
@@ -58,6 +60,7 @@ export const successMessages = {
         QUIZZES_FETCHED: "Quiz récupérés avec succès",
     },
     ar: {
+        CREATIVE_PROJECT_FETCHED: "تم جلب المشروع الإبداعي بنجاح",
         CREATIVE_PROJECTS_FETCHED: "تم جلب المشاريع الإبداعية بنجاح",
         CREATIVE_PROJECT_CREATED: "تم إنشاء المشروع الإبداعي بنجاح",
         GRADE_FETCHED: "تم جلب الصف بنجاح",

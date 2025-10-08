@@ -6,8 +6,8 @@ import { addCreativeProjectSchema } from "../validations/creativeProject.validat
 const creativeProjectRouter = express.Router();
 
 creativeProjectRouter.post("/",authMiddleware,validate(addCreativeProjectSchema),creativeProjectController.addCreativeProject)
-// userResponseRouter.get("/",authMiddleware,)
-// userResponseRouter.get("/:id",authMiddleware,)
+creativeProjectRouter.get("/",authMiddleware,creativeProjectController.getFilteredProjects)
+creativeProjectRouter.get("/:id",authMiddleware,creativeProjectController.getCreativeProjectById)
 
 
 export default creativeProjectRouter;

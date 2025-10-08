@@ -6,6 +6,7 @@ import { errorMessages } from "../translations/errorHandler";
 import { language } from "../utils/enums";
 import { SUCCESS } from "../utils/helpers";
 import { successMessages } from "../translations/successMessages.translations";
+import UserResponseModel from "../models/userAnswer.model";
 
 // ✅ Create Quiz/Test
 export const createQuizTest = async (req: Request, res: Response, next: NextFunction) => {
@@ -44,18 +45,123 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 };
 
 
+// export const getQuizTestById = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const quiz = await QuizTestModel.findById(req.params.id);
+//     const language = req.language || "en"
+//     if (!quiz) {
+//       return next(
+//         new ErrorHandler(errorMessages[language].NOT_FOUND("Quiz/Test"), 404)
+//       )
+//     }
+//     SUCCESS(res,200,successMessages[language].QUIZ_FETCHED,{quiz})
+    
+//     res.json(quiz);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// export const getQuizTestById = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const quizId = req.params.id;
+//     const userId = req.user?.id; // Assuming user ID comes from authentication middleware
+//     const language = req.language || "en";
+    
+//     // Fetch the quiz
+//     const quiz:any = await QuizTestModel.findById(quizId);
+    
+//     if (!quiz) {
+//       return next(
+//         new ErrorHandler(errorMessages[language].NOT_FOUND("Quiz/Test"), 404)
+//       );
+//     }
+    
+//     let userResponse = null;
+    
+//     // If user is authenticated, fetch their response for this quiz
+//     if (userId) {
+//       userResponse = await UserResponseModel.findOne({
+//         userId: userId,
+//         quizId: quizId
+//       });
+//     }
+    
+//     // Transform quiz data to include userSelectedOptionId
+//     const transformedQuiz = {
+//       ...quiz.toObject(),
+//       questions: quiz.questions.map((question) => {
+//         // Find user's answer for this question
+//         const userAnswer = userResponse?.answers.find(
+//           (answer) => answer.questionId.toString() === question._id.toString()
+//         );
+        
+//         return {
+//           ...question.toObject(),
+//           options: question.options.map((option) => ({
+//             ...option.toObject(),
+//             userSelectedOptionId: userAnswer && 
+//               userAnswer.selectedOptionId.toString() === option._id.toString() 
+//               ? option._id.toString() 
+//               : null
+//           }))
+//         };
+//       })
+//     };
+    
+//     SUCCESS(res, 200, successMessages[language].QUIZ_FETCHED, {
+//       quiz: transformedQuiz
+//     });
+    
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+
+
 export const getQuizTestById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const quiz = await QuizTestModel.findById(req.params.id);
-    const language = req.language || "en"
+    const quiz:any = await QuizTestModel.findById(req.params.id);
+    const language = req.language || "en";
+
     if (!quiz) {
       return next(
         new ErrorHandler(errorMessages[language].NOT_FOUND("Quiz/Test"), 404)
-      )
+      );
     }
-    SUCCESS(res,200,successMessages[language].QUIZ_FETCHED,{quiz})
-    
-    res.json(quiz);
+
+    // Check if the user has already submitted answers for this quiz
+    const userId = req.user?._id; // assuming auth middleware sets req.user
+    let userAnswersMap = new Map<string, string>(); // questionId -> selectedOptionId
+
+    if (userId) {
+      const userResponse = await UserResponseModel.findOne({
+        userId,
+        quizId: quiz._id,
+      });
+
+      if (userResponse) {
+        userResponse.answers.forEach(ans => {
+          userAnswersMap.set(ans.questionId.toString(), ans.selectedOptionId.toString());
+        });
+      }
+    }
+
+    // Build quiz object with userSelectedOptionId for each question
+    const quizWithUserSelections = {
+      ...quiz.toObject(),
+      questions: quiz.questions.map(q => ({
+        ...q.toObject(),
+        userSelectedOptionId: userAnswersMap.get(q._id.toString()) || null
+      })),
+    };
+
+    SUCCESS(res, 200, successMessages[language].QUIZ_FETCHED, {
+      quiz: quizWithUserSelections,
+    });
   } catch (error) {
     next(error);
   }

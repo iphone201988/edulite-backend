@@ -1,3 +1,4 @@
+import { required } from "joi";
 import mongoose, { Schema } from "mongoose";
 
 const creativeProjectSchema = new Schema({
@@ -7,6 +8,8 @@ const creativeProjectSchema = new Schema({
     subject: { type: String, required: true },
     type:{type:String,default:"creativeProject"},
     time: { type: Number },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
+    userName:{type:String  }
 })
 
 

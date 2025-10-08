@@ -24,9 +24,9 @@ export const submitUserResponse = async (req: Request, res: Response, next: Next
 
     const processedAnswers = answers.map((ans: any) => {
       const question = quiz.questions.find(q => q._id.toString() === ans.questionId);
-      if (!question) {
+      if (!question) {  
         return next(
-          new ErrorHandler(errorMessages[language].INVALID("Quiz/Test"), 404)
+          new ErrorHandler(errorMessages[language].INVALID("Quiz/Test questionId"), 404)
         )
       }
 
