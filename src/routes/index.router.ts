@@ -9,7 +9,7 @@ import path from "path";
 // import userResponseRouter from "./userResponse.route";
 const router = express.Router();
 
-router.use("/uploads", express.static(path.join(__dirname, "../../../uploads")));
+router.use("/uploads", express.static(path.join(__dirname, "../../../../uploads")));
 router.use("/upload", uploadRoutes);
 router.use("/auth", userRouter);
 router.use("/test-quiz",testQuizRouter)
