@@ -71,6 +71,10 @@ export const getQuizTestByIdValidation = {
 
 
 const subjectSchema = Joi.object({
+  icon: Joi.string().required().messages({
+    "string.base": "icon must be a string",
+    "any.required": "icon is required",
+  }),
   name: Joi.string().required().messages({
     "string.base": "Subject name must be a string",
     "any.required": "Subject name is required",
@@ -81,13 +85,19 @@ const subjectSchema = Joi.object({
     .messages({
       "array.base": "Types must be an array of strings",
     }),
-})  ;
+});
 
 // Grade schema
-export const addGradeSchema = {body:Joi.object({
-  grade: Joi.string().required().messages({
-    "string.base": "Grade must be a string",
-    "any.required": "Grade is required",
-  }),
-  subjects: Joi.array().items(subjectSchema).default([]),
-})};
+export const addGradeSchema = {
+  body: Joi.object({
+    icon: Joi.string().required().messages({
+      "string.base": "icon must be a string",
+      "any.required": "icon is required",
+    }),
+    grade: Joi.string().required().messages({
+      "string.base": "Grade must be a string",
+      "any.required": "Grade is required",
+    }),
+    subjects: Joi.array().items(subjectSchema).default([]),
+  })
+};

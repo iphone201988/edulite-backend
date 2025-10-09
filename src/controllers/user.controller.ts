@@ -1,13 +1,53 @@
 import { NextFunction, Request, Response } from "express";
-import { findUserByEmail, userData } from "../services/user.service";
+import { findUserByEmail, findUserBySocialId, userData } from "../services/user.service";
 import ErrorHandler from "../utils/errorHandler";
 import { errorMessages } from "../translations/errorHandler";
-import { comparePassword, generateOtp, hashPassword, sendLocalizedEmail, signToken, SUCCESS } from "../utils/helpers";
+import { comparePassword, generateOtp, hashPassword, sendEmail, sendLocalizedEmail, signToken, SUCCESS } from "../utils/helpers";
 import User from "../models/user.model";
 import { successMessages } from "../translations/successMessages.translations";
 import { AccountStatus, roleType } from "../utils/enums";
 import { IUser } from "../types/user.types";
 
+
+
+const socialLogin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+        const { socialId, provider, email, deviceToken, deviceType } = req.body;
+        let user = await findUserBySocialId(socialId, provider);
+        const language = "English"
+        const lowercaseEmail = email?.toLowerCase();
+        if (!user) {
+            user = await findUserByEmail(lowercaseEmail);
+
+
+            if (user) {
+                user.socialLinkedAccounts.push({ provider, id: socialId });
+            } else {
+                user = new User({
+                    email: lowercaseEmail,
+                    socialLinkedAccounts: [{ provider, id: socialId }],
+                    deviceToken,
+                    deviceType,
+                });
+            }
+
+        }
+        user.deviceToken = deviceToken ?? null;
+        user.deviceType = deviceType ?? null;
+        
+
+        await user.save();
+
+        const token = signToken({ id: user._id});
+        SUCCESS(res, 200, successMessages[language].LOGIN_SUCCESS, {
+            user: userData(user),
+            token,
+        });
+    } catch (error) {
+        console.log("error in socialLogin", error);
+        next(error);
+    }
+}
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
@@ -123,7 +163,7 @@ const verifyUserEmail = async (req: Request, res: Response, next: NextFunction):
             )
         }
 
-        if (user.isEmailVerified && type === 1) {
+        if (user.isEmailVerified && (type === 1 || type=="1")) {
             return SUCCESS(res, 200, successMessages[language].EMAIL_ALREADY_VERIFIED,
                 { user: userData(user) });
         }
@@ -145,7 +185,7 @@ const verifyUserEmail = async (req: Request, res: Response, next: NextFunction):
             )
         }
 
-        if (type === 1) {
+        if (type === 1 || type=="1") {
             user.isEmailVerified = true;
         }
         user.otp = null;
@@ -443,6 +483,35 @@ const accountDelete = async (req: Request, res: Response, next: NextFunction): P
     }
 }
 
+
+// const resendOtp = async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         const { email } = req.body
+//         const user = await findUserByEmail(email)
+//         if (!user) {
+//             throw new ErrorHandler("User not Found", 400);
+//         }
+//         const otp = generateOtp(4);
+//         user.otp = otp;
+//         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+//         user.otpVerified = false;
+//         await user.save();
+//         await sendEmail({
+//             userEmail: email,
+//             subject: "Password Reset OTP Verification sent to your email",
+//             text: "",
+//             html: forgetPasswordTempla(otp),
+//         });
+//         return SUCCESS(res, 200, "OTP sent to your email", {
+//             user: userData(user)
+//         });
+//     }
+//     catch (error) {
+//         next(error);
+//     }
+// }
+
+
 export default {
     register,
     verifyUserEmail,
@@ -452,5 +521,6 @@ export default {
     resetPassword,
     forgetPassword,
     accountLogout,
-    accountDelete
+    accountDelete,
+    socialLogin
 }

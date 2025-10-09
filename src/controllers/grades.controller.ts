@@ -7,7 +7,7 @@ import { successMessages } from "../translations/successMessages.translations";
 
 export const addGrade = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { grade, subjects } = req.body;
+    const { grade, subjects ,icon} = req.body;
     const language = req.language || "en";
     const existing = await GradeModel.findOne({ grade });
     console.log("erorrrrr.....",errorMessages[language].ALREADY_EXISTS("Grade"))
@@ -16,7 +16,7 @@ export const addGrade = async (req: Request, res: Response, next: NextFunction) 
         new ErrorHandler(errorMessages[language].ALREADY_EXISTS("Grade"), 409)
       )
     }
-    const newGrade = await GradeModel.create({ grade, subjects: subjects });
+    const newGrade = await GradeModel.create({ grade, subjects: subjects,icon });
     SUCCESS(res, 201, successMessages[language].GRADE_CREATED, { newGrade })
   } catch (error) {
     next(error);
@@ -26,7 +26,7 @@ export const addGrade = async (req: Request, res: Response, next: NextFunction) 
 
 export const getAllGrades = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const grades = await GradeModel.find({}, { grade: 1 }).lean();
+    const grades = await GradeModel.find({}, { grade: 1, icon:1 }).lean();
     const language = req.language || "en"
     SUCCESS(res, 200, successMessages[language].GRADES_FETCHED, { grades })
     // res.status(200).json(grades);
