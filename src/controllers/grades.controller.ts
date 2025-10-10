@@ -17,7 +17,7 @@ export const addGrade = async (req: Request, res: Response, next: NextFunction) 
       )
     }
     const newGrade = await GradeModel.create({ grade, subjects: subjects,icon });
-    SUCCESS(res, 201, successMessages[language].GRADE_CREATED, { newGrade })
+    SUCCESS(res, 200, successMessages[language].GRADE_CREATED, { newGrade })
   } catch (error) {
     next(error);
   }
@@ -45,6 +45,7 @@ export const getGradeById = async (req: Request, res: Response, next: NextFuncti
     if (!grade) {
       return next(new ErrorHandler(errorMessages[language].NOT_FOUND("Grade"), 404));
     }
+    console.log("grade..",grade)
     SUCCESS(res, 200, successMessages[language].GRADE_FETCHED, { grade })
     // res.status(200).json(grade);
   } catch (error) {

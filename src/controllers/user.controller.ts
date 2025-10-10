@@ -34,11 +34,11 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
         }
         user.deviceToken = deviceToken ?? null;
         user.deviceType = deviceType ?? null;
-        
+
 
         await user.save();
 
-        const token = signToken({ id: user._id});
+        const token = signToken({ id: user._id });
         SUCCESS(res, 200, successMessages[language].LOGIN_SUCCESS, {
             user: userData(user),
             token,
@@ -51,7 +51,7 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-        const { name, dob, email, password, deviceToken, deviceType, language = "en", role, phone,countryCode} = req.body;
+        const { name, dob, email, password, deviceToken, deviceType, language = "en", role, phone, countryCode } = req.body;
         const lowercaseEmail = email?.toLowerCase().trim();
         const existingUser = await findUserByEmail(lowercaseEmail);
 
@@ -138,7 +138,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         // });
 
 
-        SUCCESS(res, 201, successMessages[language].OTP_SENT, {
+        SUCCESS(res, 200, successMessages[language].OTP_SENT, {
             user: userData(user),
         }, language);
     } catch (error) {
@@ -163,7 +163,7 @@ const verifyUserEmail = async (req: Request, res: Response, next: NextFunction):
             )
         }
 
-        if (user.isEmailVerified && (type === 1 || type=="1")) {
+        if (user.isEmailVerified && (type === 1 || type == "1")) {
             return SUCCESS(res, 200, successMessages[language].EMAIL_ALREADY_VERIFIED,
                 { user: userData(user) });
         }
@@ -185,7 +185,7 @@ const verifyUserEmail = async (req: Request, res: Response, next: NextFunction):
             )
         }
 
-        if (type === 1 || type=="1") {
+        if (type === 1 || type == "1") {
             user.isEmailVerified = true;
         }
         user.otp = null;
@@ -323,7 +323,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         await user.save();
 
         const language = user.preferredLanguage || "en";
-        return SUCCESS(res, 201, successMessages[language].PROFILE_UPDATED, { user: userData(user) });
+        return SUCCESS(res, 200, successMessages[language].PROFILE_UPDATED, { user: userData(user) });
 
     } catch (error) {
         next(error);
@@ -440,7 +440,7 @@ const forgetPassword = async (req: Request, res: Response, next: NextFunction): 
 
         await sendLocalizedEmail(email, otp, "forgot", language)
 
-        return SUCCESS(res, 201, successMessages[language].OTPSENTFORPASSWORDRESET);
+        return SUCCESS(res, 200, successMessages[language].OTPSENTFORPASSWORDRESET);
     } catch (error) {
         next(error);
     }
@@ -484,32 +484,57 @@ const accountDelete = async (req: Request, res: Response, next: NextFunction): P
 }
 
 
-// const resendOtp = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         const { email } = req.body
-//         const user = await findUserByEmail(email)
-//         if (!user) {
-//             throw new ErrorHandler("User not Found", 400);
-//         }
-//         const otp = generateOtp(4);
-//         user.otp = otp;
-//         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-//         user.otpVerified = false;
-//         await user.save();
-//         await sendEmail({
-//             userEmail: email,
-//             subject: "Password Reset OTP Verification sent to your email",
-//             text: "",
-//             html: forgetPasswordTempla(otp),
-//         });
-//         return SUCCESS(res, 200, "OTP sent to your email", {
-//             user: userData(user)
-//         });
-//     }
-//     catch (error) {
-//         next(error);
-//     }
-// }
+
+export const resendOtp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+        const { email, type, language = "en" } = req.body;
+
+        const lowercaseEmail = email.toLowerCase().trim();
+        const user = await findUserByEmail(lowercaseEmail);
+
+        if (!user) {
+            return next(new ErrorHandler(errorMessages[language].NOT_FOUND("User"), 404))
+        }
+
+        if (type === 1) {
+            if (user.isEmailVerified) {
+                return next(new ErrorHandler(errorMessages[language].EMAIL_ALREADY_VERIFIED, 400))
+            }
+            const otp = generateOtp(4);
+            user.otp = otp;
+            user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            user.otpVerified = false;
+            await user.save();
+
+            await sendLocalizedEmail(email, otp, "verify", language);
+
+            return SUCCESS(res, 200, successMessages[language].OTP_RESENT_FOR_VERIFICATION);
+        }
+
+        // --- Type 2: Password Reset ---
+        if (type === 2) {
+            if (!user.isEmailVerified) {
+                return next(new ErrorHandler(errorMessages[language].USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED, 400))
+            }
+
+            const otp = generateOtp(4);
+            user.otp = otp;
+            user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            user.otpVerified = false;
+            await user.save();
+
+            await sendLocalizedEmail(email, otp, "forgot", language);
+
+            return SUCCESS(res, 200, successMessages[language].OTP_RESENT_FOR_PASSWORD_RESET);
+        }
+
+        return next (new ErrorHandler(errorMessages[language].INVALID_TYPE, 400));
+
+    } catch (error) {
+        console.log("errorrrr..l.", error)
+        next(error);
+    }
+};
 
 
 export default {
@@ -522,5 +547,6 @@ export default {
     forgetPassword,
     accountLogout,
     accountDelete,
-    socialLogin
+    socialLogin,
+    resendOtp
 }

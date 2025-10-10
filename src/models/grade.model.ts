@@ -6,15 +6,21 @@ interface ISubject {
   string
 }
 
+
 interface IGrade extends Document {
   grade: string; // e.g., "Grade 1"
   subjects: ISubject[];
   icon:string
 }
 
+const TypesSchema: Schema = new Schema({
+  name: { type: String, required: true },
+  icon: { type: String },
+});
+
 const SubjectSchema: Schema = new Schema({
   name: { type: String, required: true },
-  types: { type: [String], default: [] },
+  types: { type: [TypesSchema], default: [] },
   icon: { type: String },
 });
 

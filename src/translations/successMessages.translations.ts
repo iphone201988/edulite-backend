@@ -1,5 +1,7 @@
 export const successMessages = {
     en: {
+        OTP_RESENT_FOR_VERIFICATION: "OTP resent successfully for email verification",
+        OTP_RESENT_FOR_PASSWORD_RESET: "OTP resent successfully for password reset",
         CREATIVE_PROJECT_FETCHED: "Creative project fetched successfully",
         CREATIVE_PROJECTS_FETCHED: "Creative projects fetched successfully",
         CREATIVE_PROJECT_CREATED: "Creative project created successfully",
@@ -30,6 +32,8 @@ export const successMessages = {
         GRADES_FETCHED: "Grades fetched successfully",
     },
     fr: {
+        OTP_RESENT_FOR_VERIFICATION: "OTP renvoyé avec succès pour la vérification de l'e-mail",
+        OTP_RESENT_FOR_PASSWORD_RESET: "OTP renvoyé avec succès pour la réinitialisation du mot de passe",  
         CREATIVE_PROJECT_FETCHED: "Projet créatif récupéré avec succès",
         CREATIVE_PROJECTS_FETCHED: "Projets créatifs récupérés avec succès",
         CREATIVE_PROJECT_CREATED: "Projet créatif créé avec succès",
@@ -60,6 +64,8 @@ export const successMessages = {
         QUIZZES_FETCHED: "Quiz récupérés avec succès",
     },
     ar: {
+        OTP_RESENT_FOR_VERIFICATION:"تم إرسال رمز التحقق (OTP) بنجاح للتحقق من البريد الإلكتروني",
+        OTP_RESENT_FOR_PASSWORD_RESET:"تم إرسال رمز التحقق (OTP) بنجاح لإعادة تعيين كلمة المرور",
         CREATIVE_PROJECT_FETCHED: "تم جلب المشروع الإبداعي بنجاح",
         CREATIVE_PROJECTS_FETCHED: "تم جلب المشاريع الإبداعية بنجاح",
         CREATIVE_PROJECT_CREATED: "تم إنشاء المشروع الإبداعي بنجاح",

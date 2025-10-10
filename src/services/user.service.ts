@@ -12,6 +12,9 @@ export const findUserBySocialId = async (id: string, provider: number) => await 
 
 export const userData = (user: any, token?: any) => {
   const data: any = {
+    dob:user.dob|| "",
+    phone:user.phone|| "",
+    countryCode:user.countryCode|| "",
     address:user.address|| "",
     _id: user._id,
     email: user.email,

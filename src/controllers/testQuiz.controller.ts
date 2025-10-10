@@ -21,7 +21,7 @@ export const createQuizTest = async (req: Request, res: Response, next: NextFunc
     const quizTest = new QuizTestModel({ name, description, grade, subject, type, time, numberOfQuestions, questions });
     await quizTest.save();
 
-    SUCCESS(res, 201, successMessages[language].TEST_QUIZ_CREATED, { quizTest })
+    SUCCESS(res, 200, successMessages[language].TEST_QUIZ_CREATED, { quizTest })
   } catch (error) {
     next(error);
   }

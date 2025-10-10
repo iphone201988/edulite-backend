@@ -16,5 +16,7 @@ userRouter.post("/forgot-password",validate(forgetPasswordSchema),userController
 userRouter.post("/reset-password",validate(resetPasswordSchema),userController.resetPassword)
 userRouter.post("/logout",authMiddleware,userController.accountLogout)
 userRouter.post("/delete",authMiddleware,userController.accountDelete)
+userRouter.post("/social-login",userController.socialLogin)
+userRouter.post("/resend-otp",validate(verifyUserEmailSchema),userController.resendOtp)
 // userRouter.get("/get-profile",authMiddleware,userController.getProfile)
 export default userRouter;

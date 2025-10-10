@@ -1,6 +1,6 @@
 export const errorMessages = {
   en: {
-
+    EMAIL_ALREADY_VERIFIED:"Email is already verified",
     INTERNAL_SERVER_ERROR: "Internal Server Error",
     JWT_EXPIRED: "Please login again.",
     INVALID_SIGNATURE: "Invalid token.",
@@ -23,6 +23,7 @@ export const errorMessages = {
 
   },
   fr: {
+    EMAIL_ALREADY_VERIFIED:"L'e-mail est déjà vérifié",
     NUMBEROFQUESTIONSNOTMACTHED:"Le nombre de questions ne correspond pas à la longueur du tableau des questions.",
     PASSWORD_RESET_SUCCESS: "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
     OTP_NOT_VERIFIED: "Veuillez vérifier votre OTP avant de réinitialiser le mot de passe.",
@@ -45,6 +46,7 @@ export const errorMessages = {
   },
 
   ar: {
+    EMAIL_ALREADY_VERIFIED:"البريد الإلكتروني تم التحقق منه بالفعل",
     NUMBEROFQUESTIONSNOTMACTHED:"عدد الأسئلة لا يتطابق مع طول مصفوفة الأسئلة.",
     PASSWORD_RESET_SUCCESS: "تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.",
     OTP_NOT_VERIFIED: "يرجى التحقق من OTP الخاص بك قبل إعادة تعيين كلمة المرور.",
