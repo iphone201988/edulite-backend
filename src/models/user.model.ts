@@ -1,12 +1,12 @@
 import { Schema, model } from "mongoose";
-import { AccountStatus, deviceType, SocialLoginType } from "../utils/enums";
+import { AccountStatus, deviceType, roleType, SocialLoginType } from "../utils/enums";
 import { IUser } from "../types/user.types";
 
 const userSchema = new Schema<IUser>(
   {
-    phone:{type:String,default:""},
-    countryCode:{type:String,default:""},
-    profilePicture: { type: String , default:"" },
+    phone: { type: String, default: "" },
+    countryCode: { type: String, default: "" },
+    profilePicture: { type: String, default: "" },
     isEmailVerified: { type: Boolean, default: false },
     socialLinkedAccounts: [{ provider: { type: Number, enum: [SocialLoginType.APPLE, SocialLoginType.GOOGLE] }, id: { type: String } }],
     email: { type: String },
@@ -35,6 +35,12 @@ const userSchema = new Schema<IUser>(
     otpExpiry: { type: Date },
     otpVerified: { type: Boolean },
     isDeleted: { type: Boolean, default: false },
+    role: {
+      type: Number,
+      enum: Object.values(roleType), // [1, 2, 3]
+      default: roleType.STUDENT,     // defaults to 1
+    },
+
     stripeId: { type: String },
     subscriptionId: {
       type: String,

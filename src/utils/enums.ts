@@ -11,6 +11,7 @@ export enum AccountStatus {
     TEACHER:2,
     ADMIN:3
 }
+export type RoleType = typeof roleType[keyof typeof roleType];
 
 export const SocialLoginType = {
     APPLE: 1,

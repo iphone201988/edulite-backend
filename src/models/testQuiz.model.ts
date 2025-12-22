@@ -10,7 +10,7 @@ interface Option {
 interface Question {
     question: string;
     answer: string; // could also be an index if you want
-     options: Option[];
+    options: Option[];
 }
 
 const optionSchema = new Schema<Option>(
@@ -28,7 +28,7 @@ export interface QuizTestDocument extends Document {
     description?: string;
     grade: string;
     subject: string;
-    type: "quiz" | "test";
+    type: "quiz" | "test" | "questQuiz";
     numberOfQuestions: number;
     time: number;
     questions: Question[];
@@ -43,7 +43,7 @@ const questionSchema = new Schema<Question>(
         answer: { type: String, required: true },
         options: { type: [optionSchema], required: true },
     },
-    { _id:true }
+    { _id: true }
 );
 
 // Schema for Quiz/Test
@@ -53,7 +53,7 @@ const quizTestSchema = new Schema<QuizTestDocument>(
         description: { type: String },
         grade: { type: String, required: true },
         subject: { type: String, required: true },
-        type: { type: String, enum: ["quiz", "test"], required: true },
+        type: { type: String, enum: ["quiz", "test", "questQuiz"], required: true },
         numberOfQuestions: { type: Number, required: true },
         time: { type: Number, required: true }, // minutes
         questions: { type: [questionSchema], required: true },

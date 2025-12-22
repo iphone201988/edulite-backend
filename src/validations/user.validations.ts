@@ -64,6 +64,7 @@ export const registerSchema = {
 
 export const verifyUserEmailSchema = {
   body: Joi.object({
+    otp: Joi.string().length(4).required(),
     email: Joi.string().email().lowercase().trim().required(),
     type: Joi.number()
       .valid(1, 2) // 1 = email verification, 2 = forgot password
@@ -77,6 +78,7 @@ export const verifyUserEmailSchema = {
       .default(language.ENGLISH),
   })
 };
+
 
 
 

@@ -5,7 +5,7 @@ export const errorMessages = {
     JWT_EXPIRED: "Please login again.",
     INVALID_SIGNATURE: "Invalid token.",
     ALREADY_EXISTS: (key: string) => `${key} already exists.`,
-    NOT_FOUND: (key: string) => `${key} not found.`,
+    NOT_FOUND: (key: string) => `${key} does not exist.`,
     INVALID: (key: string) => `Invalid ${key}.`,
     WRONG: (key: string) => `Wrong ${key}.`,
     otpNotVerifiedBody:

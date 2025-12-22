@@ -55,7 +55,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   } catch (error: any) {
     // Catch unexpected errors
     return res
-      .status(error.statusCode || 500)
+      .status(error.statusCode || 401)
       .json({ success: false, message: error.message || "Internal Server Error" });
   }
 };

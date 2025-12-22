@@ -9,7 +9,7 @@ interface AnswerItem {
 export interface UserResponseDocument extends Document {
   userId: Types.ObjectId; // reference to User
   quizId: Types.ObjectId; // reference to QuizTest
-  type: "quiz" | "test";
+  type: "quiz" | "test" | "quest";
   answers: AnswerItem[];
   timeTaken: number; // in seconds
   points: number; // correct * 10
@@ -17,7 +17,8 @@ export interface UserResponseDocument extends Document {
   incorrectCount: number;
   createdAt: Date;
   updatedAt: Date;
-  status:String;
+  status: String;
+  teamId: Types.ObjectId;
 }
 
 const answerItemSchema = new Schema<AnswerItem>(
@@ -31,8 +32,14 @@ const answerItemSchema = new Schema<AnswerItem>(
 
 const userResponseSchema = new Schema<UserResponseDocument>(
   {
-    status:{type:String,default:"in-progress"},
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    teamId: { type: Schema.Types.ObjectId, ref: "Team" },
+    status: {
+      type: String,
+      enum: ["in-progress", "completed"],
+      default: "in-progress",
+      index: true, // useful for prize counting
+    },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
     quizId: { type: Schema.Types.ObjectId, ref: "QuizTest", required: true },
     type: { type: String, enum: ["quiz", "test"], required: true },
     answers: { type: [answerItemSchema], required: true },

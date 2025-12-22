@@ -7,7 +7,7 @@ export const quizTestValidation = {
     description: Joi.string().allow("").optional(),
     grade: Joi.string().required(),
     subject: Joi.string().required(),
-    type: Joi.string().valid("quiz", "test").required(),
+    type: Joi.string().valid("quiz", "test","questQuiz").required(),
     time: Joi.number().min(1).required(), // minutes
     numberOfQuestions: Joi.number().min(1).required(),
 
@@ -100,4 +100,70 @@ export const addGradeSchema = {
     }),
     subjects: Joi.array().items(subjectSchema).default([]),
   })
+};
+
+
+
+
+export const updateQuizTestValidation = {
+  body: Joi.object({
+    name: Joi.string().min(3).max(100).optional(),
+
+    description: Joi.string().allow("").optional(),
+
+    grade: Joi.string().optional(),
+
+    subject: Joi.string().optional(),
+
+    type: Joi.string()
+      .valid("quiz", "test", "questQuiz")
+      .optional(),
+
+    time: Joi.number().min(1).optional(),
+
+    numberOfQuestions: Joi.number().min(1).optional(),
+
+    questions: Joi.array()
+      .items(
+        Joi.object({
+          question: Joi.string().min(3).required(),
+
+          options: Joi.array()
+            .items(
+              Joi.object({
+                text: Joi.string().min(1).required(),
+              })
+            )
+            .min(2)
+            .required(),
+
+          answer: Joi.string().required(),
+        })
+      )
+      .optional(),
+  }).custom((value, helpers) => {
+    /* numberOfQuestions ↔ questions length */
+    if (
+      value.questions &&
+      value.numberOfQuestions &&
+      value.questions.length !== value.numberOfQuestions
+    ) {
+      return helpers.error("any.invalid", {
+        message: "numberOfQuestions does not match questions array length",
+      });
+    }
+
+    /* answer must exist in options */
+    if (value.questions) {
+      for (const q of value.questions) {
+        if (!q.options.some((opt: any) => opt.text === q.answer)) {
+          return helpers.error("any.invalid", {
+            message: `Answer "${q.answer}" does not match any option in question "${q.question}"`,
+          });
+        }
+      }
+    }
+
+    return value;
+  }, "update quiz validation"),
 };

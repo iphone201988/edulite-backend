@@ -28,17 +28,75 @@ export const createQuizTest = async (req: Request, res: Response, next: NextFunc
 };
 
 
-export const getFilteredQuizTests = async (req: Request, res: Response, next: NextFunction) => {
+export const getFilteredQuizTests = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { grade, subject, type } = req.query;
-    const language=req.language||"en"       
+    const {
+      grade,
+      subject,
+      type,
+      search,
+      page = "1",
+      limit = "10",
+    } = req.query;
+
+    const language = req.language || "en";
+
+    // 🔹 Base filter
     const filter: any = {};
+
     if (grade) filter.grade = grade;
     if (subject) filter.subject = subject;
     if (type) filter.type = type;
 
-    const quizzes = await QuizTestModel.find(filter).sort({ createdAt: -1 }).select({_id:1,name:1,time:1});
-    SUCCESS(res,200,successMessages[language].QUIZZES_FETCHED,{quizzes})
+    // 🔍 Search logic
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { subject: { $regex: search, $options: "i" } }, // optional
+      ];
+    }
+
+    // 🔢 Pagination
+    const pageNumber = parseInt(page as string, 10);
+    const pageSize = parseInt(limit as string, 10);
+    const skip = (pageNumber - 1) * pageSize;
+
+    // 📊 Count
+    const totalCount = await QuizTestModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // 📥 Fetch data
+    const quizzes = await QuizTestModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .select({
+        _id: 1,
+        name: 1,
+        time: 1,
+        description: 1,
+        grade: 1,
+        subject: 1,
+        type: 1,
+        questions: 1,
+      });
+
+    SUCCESS(res, 200, successMessages[language].QUIZZES_FETCHED, {
+      quizzes,
+      pagination: {
+        currentPage: pageNumber,
+        totalPages,
+        totalCount,
+        pageSize,
+        hasNextPage: pageNumber < totalPages,
+        hasPrevPage: pageNumber > 1,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -55,7 +113,7 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 //       )
 //     }
 //     SUCCESS(res,200,successMessages[language].QUIZ_FETCHED,{quiz})
-    
+
 //     res.json(quiz);
 //   } catch (error) {
 //     next(error);
@@ -68,18 +126,18 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 //     const quizId = req.params.id;
 //     const userId = req.user?.id; // Assuming user ID comes from authentication middleware
 //     const language = req.language || "en";
-    
+
 //     // Fetch the quiz
 //     const quiz:any = await QuizTestModel.findById(quizId);
-    
+
 //     if (!quiz) {
 //       return next(
 //         new ErrorHandler(errorMessages[language].NOT_FOUND("Quiz/Test"), 404)
 //       );
 //     }
-    
+
 //     let userResponse = null;
-    
+
 //     // If user is authenticated, fetch their response for this quiz
 //     if (userId) {
 //       userResponse = await UserResponseModel.findOne({
@@ -87,7 +145,7 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 //         quizId: quizId
 //       });
 //     }
-    
+
 //     // Transform quiz data to include userSelectedOptionId
 //     const transformedQuiz = {
 //       ...quiz.toObject(),
@@ -96,7 +154,7 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 //         const userAnswer = userResponse?.answers.find(
 //           (answer) => answer.questionId.toString() === question._id.toString()
 //         );
-        
+
 //         return {
 //           ...question.toObject(),
 //           options: question.options.map((option) => ({
@@ -109,11 +167,11 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 //         };
 //       })
 //     };
-    
+
 //     SUCCESS(res, 200, successMessages[language].QUIZ_FETCHED, {
 //       quiz: transformedQuiz
 //     });
-    
+
 //   } catch (error) {
 //     next(error);
 //   }
@@ -124,7 +182,7 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 
 export const getQuizTestById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const quiz:any = await QuizTestModel.findById(req.params.id);
+    const quiz: any = await QuizTestModel.findById(req.params.id);
     const language = req.language || "en";
 
     if (!quiz) {
@@ -219,5 +277,7 @@ export const deleteQuizTest = async (req: Request, res: Response, next: NextFunc
 export default {
   createQuizTest,
   getQuizTestById,
-  getFilteredQuizTests
+  getFilteredQuizTests,
+  updateQuizTest,
+  deleteQuizTest
 }
