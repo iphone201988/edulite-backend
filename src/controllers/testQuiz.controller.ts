@@ -28,49 +28,34 @@ export const createQuizTest = async (req: Request, res: Response, next: NextFunc
 };
 
 
-export const getFilteredQuizTests = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getFilteredQuizTests = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {
-      grade,
-      subject,
-      type,
-      search,
-      page = "1",
-      limit = "10",
-    } = req.query;
-
+    const { grade, subject, type, search, page = "1", limit = "10" } = req.query;
     const language = req.language || "en";
 
-    // 🔹 Base filter
+    const userId = req.user?._id;
     const filter: any = {};
 
     if (grade) filter.grade = grade;
     if (subject) filter.subject = subject;
     if (type) filter.type = type;
 
-    // 🔍 Search logic
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
-        { subject: { $regex: search, $options: "i" } }, // optional
+        { subject: { $regex: search, $options: "i" } },
       ];
     }
 
-    // 🔢 Pagination
     const pageNumber = parseInt(page as string, 10);
     const pageSize = parseInt(limit as string, 10);
     const skip = (pageNumber - 1) * pageSize;
 
-    // 📊 Count
     const totalCount = await QuizTestModel.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    // 📥 Fetch data
+    // 1️⃣ Fetch quizzes
     const quizzes = await QuizTestModel.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -86,8 +71,67 @@ export const getFilteredQuizTests = async (
         questions: 1,
       });
 
+    const quizIds = quizzes.map((q) => q._id);
+
+    // 2️⃣ Fetch user responses (include answers!)
+    const userResponses = await UserResponseModel.find({
+      quizId: { $in: quizIds },
+      userId,
+    }).select({
+      quizId: 1,
+      status: 1,
+      points: 1,
+      correctCount: 1,
+      incorrectCount: 1,
+      timeTaken: 1,
+      createdAt: 1,
+      answers: 1,
+    });
+
+    // 3️⃣ Map quizId → response
+    const responseMap = new Map(
+      userResponses.map((r) => [r.quizId.toString(), r])
+    );
+
+    // 4️⃣ Attach mapped questions + selectedOption
+    const quizzesWithResponse = quizzes.map((quiz) => {
+      const quizObj = quiz.toObject();
+      const response = responseMap.get(quiz._id.toString());
+
+      const mappedQuestions = quizObj.questions?.map((q: any) => {
+        const userAnswer = response?.answers?.find(
+          (a: any) => a?.questionId.toString() === q._id.toString()
+        );
+
+        const selectedOption =
+          q.options?.find(
+            (opt: any) =>
+              opt._id.toString() === userAnswer?.selectedOptionId?.toString()
+          ) || null;
+
+        return {
+          _id: q._id,
+          question: q.question,
+          answer: q.answer, // or q.correctAnswer text depending on schema
+          options: q.options?.map((opt: any) => ({
+            _id: opt._id,
+            text: opt.text,
+          })),
+          selectedOption: selectedOption
+            ? { _id: selectedOption._id, text: selectedOption.text }
+            : null,
+        };
+      });
+
+      return {
+        ...quizObj,
+        questions: mappedQuestions,
+        userResponse: response ? response.toObject() : null,
+      };
+    });
+
     SUCCESS(res, 200, successMessages[language].QUIZZES_FETCHED, {
-      quizzes,
+      quizzes: quizzesWithResponse,
       pagination: {
         currentPage: pageNumber,
         totalPages,
@@ -101,8 +145,6 @@ export const getFilteredQuizTests = async (
     next(error);
   }
 };
-
-
 // export const getQuizTestById = async (req: Request, res: Response, next: NextFunction) => {
 //   try {
 //     const quiz = await QuizTestModel.findById(req.params.id);
@@ -186,6 +228,7 @@ export const getQuizTestById = async (req: Request, res: Response, next: NextFun
     const language = req.language || "en";
 
     if (!quiz) {
+      console.log("Quiz not found for ID:", req.params.id);
       return next(
         new ErrorHandler(errorMessages[language].NOT_FOUND("Quiz/Test"), 404)
       );
@@ -202,8 +245,9 @@ export const getQuizTestById = async (req: Request, res: Response, next: NextFun
       });
 
       if (userResponse) {
+        console.log("User has previous responses:", userResponse);
         userResponse.answers.forEach(ans => {
-          userAnswersMap.set(ans.questionId.toString(), ans.selectedOptionId.toString());
+          userAnswersMap.set(ans?.questionId.toString(), ans?.selectedOptionId?.toString());
         });
       }
     }

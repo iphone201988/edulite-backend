@@ -18,14 +18,17 @@ const storage = multer.diskStorage({
   },
 });
 
+// ✅ FIXED: Added video support
 const fileFilter = (req: any, file: any, cb: any) => {
+  // Allow images, PDFs, AND videos
   if (
     file.mimetype.startsWith("image/") ||
-    file.mimetype === "application/pdf"
+    file.mimetype === "application/pdf" ||
+    file.mimetype.startsWith("video/")
   ) {
     cb(null, true);
   } else {
-    cb(new Error("Only images and PDFs are allowed"), false);
+    cb(new Error("Only images, PDFs, and video files (MP4, WebM, MOV) are allowed"), false);
   }
 };
 
@@ -33,5 +36,7 @@ const fileFilter = (req: any, file: any, cb: any) => {
 export const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: {
+    fileSize: 100 * 1024 * 1024 // ✅ Increased to 100MB for videos
+  },
 });

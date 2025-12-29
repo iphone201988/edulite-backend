@@ -301,7 +301,7 @@ const loginUser = async (
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { userId } = req;
-        const { name, dob, bio, preferredLanguage, location, address, profilePicture } = req.body;
+        const { name, dob, bio, preferredLanguage, location, address, profilePicture, grade, gradeId, countryCode, phone } = req.body;
         const user: IUser = await User.findById(userId);
         if (!user) {
             return next(new ErrorHandler("User not found", 404));
@@ -313,14 +313,19 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         if (address !== undefined) user.address = address;
         if (preferredLanguage !== undefined) user.preferredLanguage = preferredLanguage;
         if (profilePicture !== undefined) user.profilePicture = profilePicture
+        if (grade !== undefined) user.grade = grade;
+        if (gradeId  !== undefined) user.gradeId = gradeId;
         if (location && typeof location.latitude === "number" && typeof location.longitude === "number") {
             user.location = {
                 type: "Point",
                 coordinates: [location.longitude, location.latitude], // GeoJSON expects [lng, lat]
             };
         }
-
+        if(countryCode !== undefined) user.countryCode = countryCode;
+        if(phone !== undefined) user.phone = phone;
         await user.save();
+        const user2 = await User.findById(userId).lean().exec();
+        console.log("user2...", user2)
 
         const language = user.preferredLanguage || "en";
         return SUCCESS(res, 200, successMessages[language].PROFILE_UPDATED, { user: userData(user) });
@@ -528,7 +533,7 @@ export const resendOtp = async (req: Request, res: Response, next: NextFunction)
             return SUCCESS(res, 200, successMessages[language].OTP_RESENT_FOR_PASSWORD_RESET);
         }
 
-        return next (new ErrorHandler(errorMessages[language].INVALID_TYPE, 400));
+        return next(new ErrorHandler(errorMessages[language].INVALID_TYPE, 400));
 
     } catch (error) {
         console.log("errorrrr..l.", error)

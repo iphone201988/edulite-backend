@@ -13,9 +13,9 @@ export const createVideoSchema = {
 
         time: Joi.number().positive().required(), // seconds
 
-        videoUrl: Joi.string().uri().required(),
+        videoUrl: Joi.string().required(),
 
-        thumbnailUrl: Joi.string().uri().optional().allow(""),
+        thumbnailUrl: Joi.string().optional().allow(""),
     })
 };
 
@@ -28,9 +28,8 @@ const objectId = Joi.string().custom((value, helpers) => {
     return value;
 }, "ObjectId Validation");
 
-/**
- * ✅ Update Video Validation
- */
+
+
 export const updateVideoSchema = {
     body: Joi.object({
         title: Joi.string().trim().min(2).max(200),
@@ -41,9 +40,9 @@ export const updateVideoSchema = {
 
         time: Joi.number().positive(),
 
-        videoUrl: Joi.string().uri(),
+        videoUrl: Joi.string(),
 
-        thumbnailUrl: Joi.string().uri().allow(""),
+        thumbnailUrl: Joi.string().allow(""),
 
         isDeleted: Joi.boolean(),
     }).min(1)

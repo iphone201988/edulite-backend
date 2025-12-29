@@ -139,6 +139,7 @@ export const updateProfileSchema = {
         "date.less": "Date of birth must be in the past",
       }),
 
+
     bio: Joi.string().max(500).optional(),
 
     preferredLanguage: Joi.string()
@@ -147,7 +148,7 @@ export const updateProfileSchema = {
 
     address: Joi.string().max(255).optional(),
 
-    profilePicture: Joi.string().uri().optional().messages({
+    profilePicture: Joi.string().optional().messages({
       "string.uri": "Profile picture must be a valid URL",
     }),
 
@@ -155,6 +156,29 @@ export const updateProfileSchema = {
       latitude: Joi.number().min(-90).max(90).required(),
       longitude: Joi.number().min(-180).max(180).required(),
     }).optional(),
+    grade: Joi.string().trim().min(1).max(50).optional(),
+    gradeId: Joi.string()
+      .trim()
+      .pattern(/^[0-9a-fA-F]{24}$/)
+      .optional()
+      .messages({
+        "string.pattern.base": "gradeId must be a valid MongoDB ObjectId",
+      }),
+    countryCode: Joi.string()
+      .pattern(/^\+\d{1,4}$/)
+      .optional()
+      .messages({
+        "string.pattern.base":
+          "Country code must start with + and contain 1–4 digits (e.g., +1, +44, +971)",
+      }),
+
+    phone: Joi.string()
+      .pattern(/^\d{6,15}$/)
+      .optional()
+      .messages({
+        "string.pattern.base":
+          "Phone number must contain only digits (6–15 digits)",
+      }),
   })
 };
 
@@ -240,30 +264,32 @@ export const resetPasswordSchema = {
 
 
 
-export const resendOtpSchema = {body:Joi.object({
-  email: Joi.string()
-    .email({ tlds: { allow: false } })
-    .required()
-    .messages({
-      "string.base": "Email must be a string",
-      "string.email": "Please provide a valid email address",
-      "any.required": "Email is required",
-    }),
+export const resendOtpSchema = {
+  body: Joi.object({
+    email: Joi.string()
+      .email({ tlds: { allow: false } })
+      .required()
+      .messages({
+        "string.base": "Email must be a string",
+        "string.email": "Please provide a valid email address",
+        "any.required": "Email is required",
+      }),
 
-  type: Joi.number()
-    .valid(1, 2)
-    .required()
-    .messages({
-      "number.base": "Type must be a number (1 or 2)",
-      "any.only": "Type must be 1 (verify) or 2 (reset)",
-      "any.required": "Type is required",
-    }),
+    type: Joi.number()
+      .valid(1, 2)
+      .required()
+      .messages({
+        "number.base": "Type must be a number (1 or 2)",
+        "any.only": "Type must be 1 (verify) or 2 (reset)",
+        "any.required": "Type is required",
+      }),
 
-  language: Joi.string()
-    .valid("en", "fr", "ar")
-    .default("en")
-    .messages({
-      "string.base": "Language must be a string",
-      "any.only": "Language must be one of: en, fr, ar",
-    }),
-})};
+    language: Joi.string()
+      .valid("en", "fr", "ar")
+      .default("en")
+      .messages({
+        "string.base": "Language must be a string",
+        "any.only": "Language must be one of: en, fr, ar",
+      }),
+  })
+};

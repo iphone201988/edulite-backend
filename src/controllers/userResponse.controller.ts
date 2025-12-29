@@ -41,14 +41,14 @@ export const submitUserResponse = async (
 
       const isCorrect =
         question.options.find(
-          (opt) => opt._id.toString() === ans.selectedOptionId
+          (opt) => opt._id.toString() === ans?.selectedOptionId
         )?.text === question.answer;
 
       isCorrect ? correctCount++ : incorrectCount++;
 
       return {
-        questionId: ans.questionId,
-        selectedOptionId: ans.selectedOptionId,
+        questionId: ans?.questionId,
+        selectedOptionId: ans?.selectedOptionId,
         isCorrect,
       };
     });

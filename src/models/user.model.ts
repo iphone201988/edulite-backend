@@ -11,6 +11,7 @@ const userSchema = new Schema<IUser>(
     socialLinkedAccounts: [{ provider: { type: Number, enum: [SocialLoginType.APPLE, SocialLoginType.GOOGLE] }, id: { type: String } }],
     email: { type: String },
     password: { type: String },
+    grade: { type: String },
     language: {
       type: String,
     },
@@ -61,6 +62,11 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(AccountStatus),
       default: "pending",
     },
+    gradeId:{
+      type: Schema.Types.ObjectId,
+      ref: 'Grade',
+      // default:""
+    }
   },
   { timestamps: true }
 );

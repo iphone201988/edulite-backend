@@ -1,4 +1,5 @@
-import { Document } from "mongoose";
+import { Types } from "joi";
+import mongoose, { Document } from "mongoose";
 
 export interface ISocialLinkedAccount {
     provider: 1 | 2 | 3;
@@ -6,11 +7,11 @@ export interface ISocialLinkedAccount {
 }
 
 export interface IUser extends Document {
-    phone?:string;
-    countryCode?:string;
-    profilePicture?:string;
+    phone?: string;
+    countryCode?: string;
+    profilePicture?: string;
     status?: string;
-    address:string,
+    address: string,
     name?: string;
     // lastName?: string
     dob?: Date;
@@ -38,5 +39,7 @@ export interface IUser extends Document {
     createdAt?: Date;
     updatedAt?: Date;
     subscriptionId?: string;
+    grade?: string;
+    gradeId?: mongoose.Types.ObjectId;
     matchPassword(password: string): Promise<boolean>;
 }

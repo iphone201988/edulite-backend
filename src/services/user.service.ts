@@ -25,7 +25,9 @@ export const userData = (user: any, token?: any) => {
     isEmailVerified: user.isEmailVerified || false,
     location: user.location,
     status: user.status,
-    createdAt:user.createdAt
+    createdAt:user.createdAt,
+    grade:user.grade|| "",
+    gradeId:user.gradeId || "",
   };
 
   // only add token if passed

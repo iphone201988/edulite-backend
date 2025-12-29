@@ -12,8 +12,7 @@ import creativeProjectProjectModel from "../models/creativeProject.model";
 
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
-    // Run all count queries in parallel for better performance
-    const [totalUsers, totalQuizTests, totalTests, totalQuizzes,totalReadings,totalProjects] = 
+    const [totalUsers, totalQuizTests, totalTests, totalQuizzes, totalReadings, totalProjects] = 
       await Promise.all([
         User.countDocuments({ isDeleted: false }),
         QuizTestModel.countDocuments(),
@@ -23,6 +22,56 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         creativeProjectProjectModel.countDocuments()
       ]);
 
+    // ✅ FIXED: Use updatedAt OR createdAt (works with any User model)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    
+    const recentUsers = await User.find({
+      isDeleted: false,
+      $or: [
+        { updatedAt: { $gte: sevenDaysAgo } },
+        { createdAt: { $gte: sevenDaysAgo } }
+      ]
+    })
+    .select('name email updatedAt createdAt')
+    .sort({ updatedAt: -1 })
+    .limit(8)
+    .lean();
+
+    // If still no recent users, fallback to newest users
+    const fallbackUsers = await User.find({ isDeleted: false })
+      .select('name email createdAt')
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+
+    const usersToShow = recentUsers.length > 0 ? recentUsers : fallbackUsers;
+
+    // ✅ Top content with fallback
+    const topContentPromises = [
+      QuizTestModel.find({ type: 'quiz' })
+        .sort({ views: -1, createdAt: -1 })
+        .limit(2)
+        .select('title type views')
+        .lean(),
+      ReadingModel.find()
+        .sort({ views: -1, createdAt: -1 })
+        .limit(2)
+        .select('title type views')
+        .lean(),
+      creativeProjectProjectModel.find()
+        .sort({ views: -1, createdAt: -1 })
+        .limit(1)
+        .select('name type views')
+        .lean()
+    ];
+
+    const topContentResults = await Promise.all(topContentPromises);
+    const flattenedTopContent = [
+      ...topContentResults[0].map((q: any) => ({ ...q, type: 'quiz', count: q.views || 0 })),
+      ...topContentResults[1].map((r: any) => ({ ...r, type: 'reading', count: r.views || 0 })),
+      ...topContentResults[2].map((p: any) => ({ ...p, type: 'project', count: p.views || 0 }))
+    ].slice(0, 5);
+
     return res.status(200).json({
       success: true,
       data: {
@@ -31,7 +80,11 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         totalTests,
         totalQuizzes,
         totalReadings,
-        totalProjects
+        totalProjects,
+        activeUsers: usersToShow.length,
+        completedQuests: 0,
+        recentUsers: usersToShow,
+        topContent: flattenedTopContent
       },
     });
   } catch (error) {
@@ -42,6 +95,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -79,7 +133,7 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limitNum);
-        console.log("user....................",users)
+        console.log("user....................", users)
 
         const pagination = {
             currentPage: pageNum,
@@ -90,7 +144,7 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
             hasPrevPage: pageNum > 1
         };
 
-        SUCCESS(res, 200,  "Users fetched successfully", {
+        SUCCESS(res, 200, "Users fetched successfully", {
             users: users.map(user => userData(user)),
             pagination
         });
@@ -147,12 +201,12 @@ export const updateUserByAdmin = async (req: Request, res: Response, next: NextF
 
         // Check if email is being changed and if it already exists
         if (email && email !== user.email) {
-            const existingUser = await User.findOne({ 
-                email: email.toLowerCase().trim(), 
+            const existingUser = await User.findOne({
+                email: email.toLowerCase().trim(),
                 _id: { $ne: id },
-                isDeleted: false 
+                isDeleted: false
             });
-            
+
             if (existingUser) {
                 return next(new ErrorHandler(errorMessages[language].ALREADY_EXISTS("Email"), 409));
             }
@@ -201,13 +255,13 @@ export const changeUserStatus = async (req: Request, res: Response, next: NextFu
         user.status = status;
         await user.save();
 
-        const statusMessage = status === AccountStatus.ACTIVE 
+        const statusMessage = status === AccountStatus.ACTIVE
             ? "User activated successfully"
-            : status === AccountStatus.SUSPENDED 
-            ? "User blocked successfully"
-            : "User suspended successfully";
+            : status === AccountStatus.SUSPENDED
+                ? "User blocked successfully"
+                : "User suspended successfully";
 
-        SUCCESS(res, 200,  statusMessage, {
+        SUCCESS(res, 200, statusMessage, {
             user: userData(user)
         });
     } catch (error) {
