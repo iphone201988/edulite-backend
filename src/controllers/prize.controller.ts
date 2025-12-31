@@ -18,6 +18,7 @@ export const createPrize = async (req: Request, res: Response, next: NextFunctio
             requirement_value
         });
         return SUCCESS(res, 201, "Prize created successfully", { prize });
+        
     } catch (error) {
         next(error);
     }

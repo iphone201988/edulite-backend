@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IUserDailyQuest extends Document {
   userId: Types.ObjectId; // reference to User
   questId: Types.ObjectId; // reference to DailyQuest
-  status: "in-progress" | "completed" | "not-started"; // general quest status
+  status: "in-progress" | "completed" | "pending"; // general quest status
   type: "questReading" | "questQuiz"; // copied from DailyQuest for easier filtering
   progress?: number; // for reading quest (percentage)
   userResponseId?: Types.ObjectId; // for quiz/test quests, reference to UserResponse
@@ -24,8 +24,8 @@ const userDailyQuestSchema = new Schema<IUserDailyQuest>(
     },
     status: {
       type: String,
-      enum: ["in-progress", "completed", "not-started"],
-      default: "not-started",
+      enum: ["in-progress", "completed", "pending"],
+      default: "pending",
     },
     progress: {
       type: Number,

@@ -12,6 +12,7 @@ import adminController from "../controllers/admin.controller";
 import adminRouter from "./admin.route";
 import prizeRouter from "./prizes.route";
 import videoRouter from "./video.route";
+import notificationRouter from "./notification.route";
 const router = express.Router();
 
 router.use("/uploads", express.static(path.join(__dirname, "../../../../uploads")));
@@ -26,5 +27,6 @@ router.use("/daily-quest",dailyQuestRouter)
 router.use("/admin",adminRouter)
 router.use("/prize",prizeRouter)
 router.use("/video",videoRouter)
+router.use("/notifications", notificationRouter);
 
 export default router;

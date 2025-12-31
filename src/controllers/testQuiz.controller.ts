@@ -3,10 +3,12 @@ import QuizTestModel, { QuizTestDocument } from "../models/testQuiz.model";
 import { create } from "node:domain";
 import ErrorHandler from "../utils/errorHandler";
 import { errorMessages } from "../translations/errorHandler";
-import { language } from "../utils/enums";
+import { language, NotificationType } from "../utils/enums";
 import { SUCCESS } from "../utils/helpers";
 import { successMessages } from "../translations/successMessages.translations";
 import UserResponseModel from "../models/userAnswer.model";
+import { sendNotificationToAllUsers } from "../utils/notification.helper";
+import { not } from "joi";
 
 // ✅ Create Quiz/Test
 export const createQuizTest = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,7 +22,12 @@ export const createQuizTest = async (req: Request, res: Response, next: NextFunc
 
     const quizTest = new QuizTestModel({ name, description, grade, subject, type, time, numberOfQuestions, questions });
     await quizTest.save();
-
+    await sendNotificationToAllUsers({
+      title: "New Quiz/Test Available!",
+      description: `A new ${quizTest.name} quiz/test has been added. Test your knowledge now!`,
+      type: NotificationType.QUIZ,
+      data: { quizTest },
+    });
     SUCCESS(res, 200, successMessages[language].TEST_QUIZ_CREATED, { quizTest })
   } catch (error) {
     next(error);
@@ -223,6 +230,7 @@ export const getFilteredQuizTests = async (req: Request, res: Response, next: Ne
 
 
 export const getQuizTestById = async (req: Request, res: Response, next: NextFunction) => {
+  console.log("Fetching quiz/test by ID:", req.params.id);
   try {
     const quiz: any = await QuizTestModel.findById(req.params.id);
     const language = req.language || "en";
@@ -237,7 +245,7 @@ export const getQuizTestById = async (req: Request, res: Response, next: NextFun
     // Check if the user has already submitted answers for this quiz
     const userId = req.user?._id; // assuming auth middleware sets req.user
     let userAnswersMap = new Map<string, string>(); // questionId -> selectedOptionId
-
+    let responseData = null
     if (userId) {
       const userResponse = await UserResponseModel.findOne({
         userId,
@@ -245,6 +253,7 @@ export const getQuizTestById = async (req: Request, res: Response, next: NextFun
       });
 
       if (userResponse) {
+        responseData = userResponse
         console.log("User has previous responses:", userResponse);
         userResponse.answers.forEach(ans => {
           userAnswersMap.set(ans?.questionId.toString(), ans?.selectedOptionId?.toString());
@@ -263,6 +272,7 @@ export const getQuizTestById = async (req: Request, res: Response, next: NextFun
 
     SUCCESS(res, 200, successMessages[language].QUIZ_FETCHED, {
       quiz: quizWithUserSelections,
+      responseData
     });
   } catch (error) {
     next(error);

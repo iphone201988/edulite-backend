@@ -3,6 +3,7 @@ import QuizTestModel from "../models/testQuiz.model";
 import { ReadingModel } from "../models/reading.model";
 import DailyQuestModel from "../models/quest.model";
 import UserDailyQuestModel from "../models/userDailyQuest.model";
+import UserResponseModel from "../models/userAnswer.model";
 
 export const createDailyQuest = async (req: Request, res: Response) => {
   try {
@@ -38,6 +39,7 @@ export const createDailyQuest = async (req: Request, res: Response) => {
       testQuizId: type === "questQuiz" ? testQuizId : undefined,
       readingId: type === "reading" ? readingId : undefined,
     });
+    
 
     res.status(201).json({
       message: "Daily Quest created successfully",
@@ -53,78 +55,99 @@ export const createDailyQuest = async (req: Request, res: Response) => {
 
 export const getDailyQuest = async (req: Request, res: Response) => {
   try {
-    const { date, class: className, questType } = req.query;
-    const userId = req.userId
-    if (!date || !className  || !userId) {
+    const { date, class: className } = req.query;
+    const userId = req.userId;
+
+    if (!date || !className) {
       return res.status(400).json({
         message:
-          "Query parameters 'date', 'class', 'questType', and 'userId' are required. Example: ?date=2025-11-04&class=Grade5&questType=single&userId=abc123",
+          "Query parameters 'date', 'class' are required. Example: ?date=2025-11-04&class=Grade5",
       });
     }
 
     const startOfDay = new Date(date as string);
     startOfDay.setHours(0, 0, 0, 0);
+
     const endOfDay = new Date(date as string);
     endOfDay.setHours(23, 59, 59, 999);
-    console.log("Classsname.....",className)
-    // ✅ Fetch all daily quests for date/class/questType
+
     const dailyQuests = await DailyQuestModel.find({
-      // date: { $gte: startOfDay, $lte: endOfDay },
-      // class: className,
-      // questType,
+      date: { $gte: startOfDay, $lte: endOfDay },
+      class: className,
     })
-      .populate("testQuizId", "name type questions")
+      .populate("testQuizId", "name type ")
       .populate("readingId", "title content type")
       .sort({ createdAt: -1 })
       .lean();
 
     if (!dailyQuests.length) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: `No daily quests found for class '${className}' on ${date}.`,
       });
     }
 
-    // ✅ Get all user quest progress for this date
-    const questIds = dailyQuests.map((q) => q._id);
+    // ------------------------------
+    // 1️⃣ Get User Quest Progress
+    // ------------------------------
+    const questIds = dailyQuests.map(q => q._id);
+
     const userProgressList = await UserDailyQuestModel.find({
       userId,
       questId: { $in: questIds },
     })
-      .populate("userResponseId", "points correctCount incorrectCount")
+      // .populate("userResponseId", "points correctCount incorrectCount")
       .lean();
 
-    // 🧩 Merge progress data into each quest
-    const questsWithProgress = dailyQuests.map((quest) => {
+    // ------------------------------
+    // 2️⃣ Get all quizIds in quests
+    // ------------------------------
+    const quizIds = dailyQuests
+      .map(q => q.testQuizId?._id || q.testQuizId)
+      .filter(Boolean);
+
+    // ------------------------------
+    // 3️⃣ Fetch user answers per quiz
+    // ------------------------------
+    const userQuizResponses = await UserResponseModel.find({
+      userId,
+      quizId: { $in: quizIds },
+    }).lean().select({
+      quizId: 1,
+      status: 1,
+      points: 1,
+      correctCount: 1,
+      incorrectCount: 1,
+      // answers: 1,
+
+    });
+
+    // ------------------------------
+    // 4️⃣ Merge everything together
+    // ------------------------------
+    const questsWithProgress = dailyQuests.map(quest => {
       const progress = userProgressList.find(
-        (p) => p.questId.toString() === quest._id.toString()
+        p => p.questId.toString() === quest._id.toString()
+      );
+
+      const quizResponse = userQuizResponses.find(
+        r => r.quizId.toString() === quest?.testQuizId?._id?.toString()
       );
 
       return {
         ...quest,
-        userProgress: progress
-          ? {
-            status: progress.status,
-            progress: progress.progress ?? null,
-            startedAt: progress.startedAt ?? null,
-            completedAt: progress.completedAt ?? null,
-            userResponseId: progress.userResponseId?._id ?? null,
-            //   quizStats: progress.userResponseId
-            //     ? {
-            //         points: progress.userResponseId.points,
-            //         correctCount: progress.userResponseId.correctCount,
-            //         incorrectCount: progress.userResponseId.incorrectCount,
-            //       }
-            //     : null,
-          }
 
-          : {
-            status: "not-started",
-            progress: null,
-            startedAt: null,
-            completedAt: null,
-            userResponseId: null,
-            // quizStats: null,
-          },
+        
+
+        // ⭐ NEW FIELD — safe to add (does NOT break old clients)
+        userProgress: quizResponse
+          ? {
+            status: quizResponse.status,
+            points: quizResponse.points,
+            correctCount: quizResponse.correctCount,
+            incorrectCount: quizResponse.incorrectCount,
+            answers: quizResponse.answers,
+          }
+          : null,
       };
     });
 
@@ -138,7 +161,6 @@ export const getDailyQuest = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 
 export const getAllDailyQuestsForAdmin = async (

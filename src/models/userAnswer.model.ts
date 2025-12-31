@@ -35,8 +35,8 @@ const userResponseSchema = new Schema<UserResponseDocument>(
     teamId: { type: Schema.Types.ObjectId, ref: "Team" },
     status: {
       type: String,
-      enum: ["in-progress", "completed"],
-      default: "in-progress",
+      enum: ["pending", "in-progress", "completed"],
+      default: "pending",
       index: true, // useful for prize counting
     },
     userId: { type: Schema.Types.ObjectId, ref: "User" },

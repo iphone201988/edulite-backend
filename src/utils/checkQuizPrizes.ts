@@ -1,6 +1,8 @@
 import Prize from "../models/prize.model";
 import UserResponseModel from "../models/userAnswer.model";
 import UserPrize from "../models/userPrize.model";
+import { sendPushNotifications } from "../services/notification.service";
+import { NotificationType } from "./enums";
 
 export const checkAndAssignQuizPrizes = async (userId: string) => {
   const completedQuizCount = await UserResponseModel.countDocuments({
@@ -21,10 +23,19 @@ export const checkAndAssignQuizPrizes = async (userId: string) => {
     });
 
     if (!alreadyAssigned) {
-      await UserPrize.create({
+      const userPrize = await UserPrize.create({
         user: userId,
         prize: prize._id,
       });
+
+      await sendPushNotifications([userId], {
+        title: "🎉 You unlocked a prize!",
+        description: `You earned: ${prize.name}`,
+        type: NotificationType.BADGE,
+        data: {
+          userPrize
+        },
+      })
     }
-  }
-};
+  };
+}

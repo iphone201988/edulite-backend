@@ -32,3 +32,12 @@ export const language={
 }
 
 
+export enum NotificationType {
+  GENERAL = "GENERAL",
+  PROJECT = "PROJECT",
+  DAILY_QUEST = "DAILY_QUEST",
+  BADGE = "BADGE",
+  QUIZ="QUIZ"
+}
+
+

@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import creativeProjectProjectModel from "../models/creativeProject.model";
 import ErrorHandler from "../utils/errorHandler";
 import { errorMessages } from "../translations/errorHandler";
-import { language } from "../utils/enums";
+import { language, NotificationType } from "../utils/enums";
 import { SUCCESS } from "../utils/helpers";
 import { successMessages } from "../translations/successMessages.translations";
+import { sendNotificationToAllUsers } from "../utils/notification.helper";
 
 
 
@@ -19,6 +20,12 @@ export const addCreativeProject = async (req: Request, res: Response, next: Next
       return next(new ErrorHandler(errorMessages[language].ALREADY_EXISTS("Creative Project"), 409))
     }
     const newCreativeProject = await creativeProjectProjectModel.create({ name, description, grade, subject, time, userName: user.name, userId: user._id })
+    await sendNotificationToAllUsers({
+      title: "New Creative Project Available!",
+      description: "Check out the new creative project and unleash your creativity!",
+      type: NotificationType.PROJECT,
+      data: { newCreativeProject },
+    });
     SUCCESS(res, 200, successMessages[language].CREATIVE_PROJECT_CREATED, { newCreativeProject })
     // res.status(200).json(newCreativeProject)
   } catch (error) {
