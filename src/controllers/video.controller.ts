@@ -5,9 +5,7 @@ import { errorMessages } from "../translations/errorHandler";
 import { successMessages } from "../translations/successMessages.translations";
 import { SUCCESS } from "../utils/helpers";
 
-/**
- * ✅ Create Video
- */
+
 export const createVideo = async (
     req: Request,
     res: Response,
