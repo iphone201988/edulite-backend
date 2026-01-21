@@ -7,14 +7,14 @@ import User from "../models/user.model";
 import { successMessages } from "../translations/successMessages.translations";
 import { AccountStatus, roleType } from "../utils/enums";
 import { IUser } from "../types/user.types";
-
+import { getProfileStats } from "../utils/profileCalculations";
 
 
 const socialLogin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { socialId, provider, email, deviceToken, deviceType } = req.body;
         let user = await findUserBySocialId(socialId, provider);
-        const language = "English"
+        const language = "en"
         const lowercaseEmail = email?.toLowerCase();
         if (!user) {
             user = await findUserByEmail(lowercaseEmail);
@@ -314,21 +314,60 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         if (preferredLanguage !== undefined) user.preferredLanguage = preferredLanguage;
         if (profilePicture !== undefined) user.profilePicture = profilePicture
         if (grade !== undefined) user.grade = grade;
-        if (gradeId  !== undefined) user.gradeId = gradeId;
+        if (gradeId !== undefined) user.gradeId = gradeId;
         if (location && typeof location.latitude === "number" && typeof location.longitude === "number") {
             user.location = {
                 type: "Point",
                 coordinates: [location.longitude, location.latitude], // GeoJSON expects [lng, lat]
             };
         }
-        if(countryCode !== undefined) user.countryCode = countryCode;
-        if(phone !== undefined) user.phone = phone;
+        if (countryCode !== undefined) user.countryCode = countryCode;
+        if (phone !== undefined) user.phone = phone;
         await user.save();
-        const user2 = await User.findById(userId).lean().exec();
-        console.log("user2...", user2)
+
+        // Calculate profile statistics
+        const profileStats = await getProfileStats(userId);
 
         const language = user.preferredLanguage || "en";
-        return SUCCESS(res, 200, successMessages[language].PROFILE_UPDATED, { user: userData(user) });
+        return SUCCESS(res, 200, successMessages[language].PROFILE_UPDATED, {
+            user: userData(user),
+            stats: {
+                streak: profileStats.streak,
+                xp: profileStats.xp,
+                badges: profileStats.badges,
+                totalBadges: profileStats.totalBadges,
+                newlyEarnedBadges: profileStats.newlyEarnedBadges
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { userId } = req;
+
+        const user: IUser = await User.findById(userId);
+        if (!user) {
+            return next(new ErrorHandler("User not found", 404));
+        }
+
+        // Calculate profile statistics
+        const profileStats = await getProfileStats(userId);
+
+        const language = user.preferredLanguage || "en";
+        return SUCCESS(res, 200, successMessages[language].PROFILE_FETCHED || "Profile fetched successfully", {
+            user: userData(user),
+            stats: {
+                streak: profileStats.streak,
+                xp: profileStats.xp,
+                badges: profileStats.badges,
+                totalBadges: profileStats.totalBadges
+            }
+        });
 
     } catch (error) {
         next(error);
@@ -547,6 +586,7 @@ export default {
     verifyUserEmail,
     loginUser,
     updateProfile,
+    getProfile,
     changePassword,
     resetPassword,
     forgetPassword,

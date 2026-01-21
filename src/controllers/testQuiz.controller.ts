@@ -37,9 +37,10 @@ export const createQuizTest = async (req: Request, res: Response, next: NextFunc
 
 export const getFilteredQuizTests = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    
     const { grade, subject, type, search, page = "1", limit = "10" } = req.query;
     const language = req.language || "en";
-
+console.log("language",language)
     const userId = req.user?._id;
     const filter: any = {};
 
@@ -234,6 +235,7 @@ export const getQuizTestById = async (req: Request, res: Response, next: NextFun
   try {
     const quiz: any = await QuizTestModel.findById(req.params.id);
     const language = req.language || "en";
+    console.log("Quiz found:", language);
 
     if (!quiz) {
       console.log("Quiz not found for ID:", req.params.id);
