@@ -26,7 +26,7 @@ export const addGrade = async (req: Request, res: Response, next: NextFunction) 
 
 export const getAllGrades = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const grades = await GradeModel.find().lean();
+    const grades = await GradeModel.find().lean().sort({createdAt:1});
     const language = req.language || "en"
     SUCCESS(res, 200, successMessages[language].GRADES_FETCHED, { grades })
     // res.status(200).json(grades);
