@@ -160,9 +160,13 @@ const deleteReading = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+const readingProgressController = async (req: Request, res: Response, next: NextFunction) => {
+  
+}
+
 export default {
   createReading,
-   getReadings,
+  getReadings,
   getReadingById,
   updateReading,
   deleteReading,

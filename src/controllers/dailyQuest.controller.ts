@@ -39,7 +39,7 @@ export const createDailyQuest = async (req: Request, res: Response) => {
       testQuizId: type === "questQuiz" ? testQuizId : undefined,
       readingId: type === "reading" ? readingId : undefined,
     });
-    
+    console.log("readingQuest....",newQuest)
 
     res.status(201).json({
       message: "Daily Quest created successfully",
