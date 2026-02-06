@@ -1,7 +1,7 @@
 import User from "../models/user.model";
 
 
-export const findUserByEmail:any = async (email: string) => await User.findOne({ email });
+export const findUserByEmail:any = async (email: string) => await User.findOne({ email }).populate("gradeId", "grade icon")
 export const findUserByPhone = async (phoneNumber: string) => await User.findOne({ phoneNumber });
 export const findUserById = async (id: string) => await User.findById(id);
 export const findUserBySocialId = async (id: string, provider: number) => await User.findOne({
