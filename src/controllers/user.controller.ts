@@ -350,7 +350,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     try {
         const { userId } = req;
 
-        const user: IUser = await User.findById(userId);
+        const user: any = await User.findById(userId).populate("gradeId", "icon grade");
         if (!user) {
             return next(new ErrorHandler("User not found", 404));
         }
