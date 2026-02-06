@@ -11,89 +11,89 @@ import { ReadingModel } from "../models/reading.model";
 import creativeProjectProjectModel from "../models/creativeProject.model";
 
 export const getDashboardStats = async (req: Request, res: Response) => {
-  try {
-    const [totalUsers, totalQuizTests, totalTests, totalQuizzes, totalReadings, totalProjects] = 
-      await Promise.all([
-        User.countDocuments({ isDeleted: false }),
-        QuizTestModel.countDocuments(),
-        QuizTestModel.countDocuments({ type: "test" }),
-        QuizTestModel.countDocuments({ type: "quiz" }),
-        ReadingModel.countDocuments(),
-        creativeProjectProjectModel.countDocuments()
-      ]);
+    try {
+        const [totalUsers, totalQuizTests, totalTests, totalQuizzes, totalReadings, totalProjects] =
+            await Promise.all([
+                User.countDocuments({ isDeleted: false }),
+                QuizTestModel.countDocuments(),
+                QuizTestModel.countDocuments({ type: "test" }),
+                QuizTestModel.countDocuments({ type: "quiz" }),
+                ReadingModel.countDocuments(),
+                creativeProjectProjectModel.countDocuments()
+            ]);
 
-    // ✅ FIXED: Use updatedAt OR createdAt (works with any User model)
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    
-    const recentUsers = await User.find({
-      isDeleted: false,
-      $or: [
-        { updatedAt: { $gte: sevenDaysAgo } },
-        { createdAt: { $gte: sevenDaysAgo } }
-      ]
-    })
-    .select('name email updatedAt createdAt')
-    .sort({ updatedAt: -1 })
-    .limit(8)
-    .lean();
+        // ✅ FIXED: Use updatedAt OR createdAt (works with any User model)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // If still no recent users, fallback to newest users
-    const fallbackUsers = await User.find({ isDeleted: false })
-      .select('name email createdAt')
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .lean();
+        const recentUsers = await User.find({
+            isDeleted: false,
+            $or: [
+                { updatedAt: { $gte: sevenDaysAgo } },
+                { createdAt: { $gte: sevenDaysAgo } }
+            ]
+        })
+            .select('name email updatedAt createdAt')
+            .sort({ updatedAt: -1 })
+            .limit(8)
+            .lean();
 
-    const usersToShow = recentUsers.length > 0 ? recentUsers : fallbackUsers;
+        // If still no recent users, fallback to newest users
+        const fallbackUsers = await User.find({ isDeleted: false })
+            .select('name email createdAt')
+            .sort({ createdAt: -1 })
+            .limit(8)
+            .lean();
 
-    // ✅ Top content with fallback
-    const topContentPromises = [
-      QuizTestModel.find({ type: 'quiz' })
-        .sort({ views: -1, createdAt: -1 })
-        .limit(2)
-        .select('title type views')
-        .lean(),
-      ReadingModel.find()
-        .sort({ views: -1, createdAt: -1 })
-        .limit(2)
-        .select('title type views')
-        .lean(),
-      creativeProjectProjectModel.find()
-        .sort({ views: -1, createdAt: -1 })
-        .limit(1)
-        .select('name type views')
-        .lean()
-    ];
+        const usersToShow = recentUsers.length > 0 ? recentUsers : fallbackUsers;
 
-    const topContentResults = await Promise.all(topContentPromises);
-    const flattenedTopContent = [
-      ...topContentResults[0].map((q: any) => ({ ...q, type: 'quiz', count: q.views || 0 })),
-      ...topContentResults[1].map((r: any) => ({ ...r, type: 'reading', count: r.views || 0 })),
-      ...topContentResults[2].map((p: any) => ({ ...p, type: 'project', count: p.views || 0 }))
-    ].slice(0, 5);
+        // ✅ Top content with fallback
+        const topContentPromises = [
+            QuizTestModel.find({ type: 'quiz' })
+                .sort({ views: -1, createdAt: -1 })
+                .limit(2)
+                .select('title type views')
+                .lean(),
+            ReadingModel.find()
+                .sort({ views: -1, createdAt: -1 })
+                .limit(2)
+                .select('title type views')
+                .lean(),
+            creativeProjectProjectModel.find()
+                .sort({ views: -1, createdAt: -1 })
+                .limit(1)
+                .select('name type views')
+                .lean()
+        ];
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        totalUsers,
-        totalQuizTests,
-        totalTests,
-        totalQuizzes,
-        totalReadings,
-        totalProjects,
-        activeUsers: usersToShow.length,
-        completedQuests: 0,
-        recentUsers: usersToShow,
-        topContent: flattenedTopContent
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch dashboard statistics",
-    });
-  }
+        const topContentResults = await Promise.all(topContentPromises);
+        const flattenedTopContent = [
+            ...topContentResults[0].map((q: any) => ({ ...q, type: 'quiz', count: q.views || 0 })),
+            ...topContentResults[1].map((r: any) => ({ ...r, type: 'reading', count: r.views || 0 })),
+            ...topContentResults[2].map((p: any) => ({ ...p, type: 'project', count: p.views || 0 }))
+        ].slice(0, 5);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalUsers,
+                totalQuizTests,
+                totalTests,
+                totalQuizzes,
+                totalReadings,
+                totalProjects,
+                activeUsers: usersToShow.length,
+                completedQuests: 0,
+                recentUsers: usersToShow,
+                topContent: flattenedTopContent
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch dashboard statistics",
+        });
+    }
 };
 
 

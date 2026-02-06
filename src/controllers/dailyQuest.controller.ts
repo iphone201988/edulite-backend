@@ -4,6 +4,7 @@ import { ReadingModel } from "../models/reading.model";
 import DailyQuestModel from "../models/quest.model";
 import UserDailyQuestModel from "../models/userDailyQuest.model";
 import UserResponseModel from "../models/userAnswer.model";
+import { ReadingProgressModel } from "../models/readingProgress.model";
 
 export const createDailyQuest = async (req: Request, res: Response) => {
   try {
@@ -39,7 +40,7 @@ export const createDailyQuest = async (req: Request, res: Response) => {
       testQuizId: type === "questQuiz" ? testQuizId : undefined,
       readingId: type === "reading" ? readingId : undefined,
     });
-    console.log("readingQuest....",newQuest)
+    console.log("readingQuest....", newQuest)
 
     res.status(201).json({
       message: "Daily Quest created successfully",
@@ -104,6 +105,9 @@ export const getDailyQuest = async (req: Request, res: Response) => {
     const quizIds = dailyQuests
       .map(q => q.testQuizId?._id || q.testQuizId)
       .filter(Boolean);
+    const readingIds = dailyQuests
+      .map(q => q.readingId?._id || q?.readingId)
+      .filter(Boolean);
 
     // ------------------------------
     // 3️⃣ Fetch user answers per quiz
@@ -120,34 +124,49 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       // answers: 1,
 
     });
-
+    const userReadingReponses = await ReadingProgressModel.find({
+      userId,
+      readingId: { $in: readingIds },
+    }).lean();
     // ------------------------------
     // 4️⃣ Merge everything together
     // ------------------------------
-    const questsWithProgress = dailyQuests.map(quest => {
+    const questsWithProgress = dailyQuests.map((quest) => {
       const progress = userProgressList.find(
-        p => p.questId.toString() === quest._id.toString()
+        (p) => p.questId.toString() === quest._id.toString()
       );
 
+      // 🎯 Find quiz response
       const quizResponse = userQuizResponses.find(
-        r => r.quizId.toString() === quest?.testQuizId?._id?.toString()
+        (r) => r.quizId.toString() === quest?.testQuizId?._id?.toString()
+      );
+
+      // 📖 Find reading progress
+      const readingProgress = userReadingReponses.find(
+        (r) => r.readingId?.toString() === quest?.readingId?._id?.toString()
       );
 
       return {
         ...quest,
 
-        
+        // ⭐ Separate progress
+        userProgress: {
+          quiz: quizResponse
+            ? {
+              status: quizResponse.status,
+              points: quizResponse.points,
+              correctCount: quizResponse.correctCount,
+              incorrectCount: quizResponse.incorrectCount,
+            }
+            : null,
 
-        // ⭐ NEW FIELD — safe to add (does NOT break old clients)
-        userProgress: quizResponse
-          ? {
-            status: quizResponse.status,
-            points: quizResponse.points,
-            correctCount: quizResponse.correctCount,
-            incorrectCount: quizResponse.incorrectCount,
-            answers: quizResponse.answers,
-          }
-          : null,
+          reading: readingProgress
+            ? {
+              status: readingProgress.status, // assuming field exists
+              progress: readingProgress.progress, // or percentage/completed flag
+            }
+            : null,
+        },
       };
     });
 

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { ReadingModel } from "../models/reading.model";
 import mongoose from "mongoose";
+import { ReadingProgressModel } from "../models/readingProgress.model";
+import UserResponseModel from "../models/userAnswer.model";
 
 const createReading = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -160,14 +162,66 @@ const deleteReading = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-const readingProgressController = async (req: Request, res: Response, next: NextFunction) => {
-  
-}
+export const updateReadingProgress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?._id; // assuming auth middleware adds req.user
+    const { readingId, status } = req.body;
+
+    // ===== VALIDATIONS =====
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(readingId)) {
+      return res.status(400).json({ message: "Invalid reading ID" });
+    }
+
+   
+
+    // Ensure reading exists
+    const readingExists = await ReadingModel.exists({ _id: readingId });
+    if (!readingExists) {
+      return res.status(404).json({ message: "Reading not found" });
+    }
+
+    // ===== DETERMINE STATUS =====
+ 
+
+    // ===== UPSERT PROGRESS =====
+    const updatedProgress = await UserResponseModel.findOneAndUpdate(
+      { userId, readingId },
+      {
+        $set: {
+          status
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Reading progress updated",
+      data: updatedProgress,
+    });
+  } catch (error) {
+    console.error("Error updating reading progress:", error);
+    next(error);
+  }
+};
 
 export default {
   createReading,
   getReadings,
   getReadingById,
   updateReading,
+  updateReadingProgress,
   deleteReading,
 }
