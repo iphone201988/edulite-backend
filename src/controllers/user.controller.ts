@@ -329,8 +329,9 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         const profileStats = await getProfileStats(userId);
 
         const language = user.preferredLanguage || "en";
+         const userProfile: IUser = await User.findById(userId).populate("gradeId","icon grade");
         return SUCCESS(res, 200, successMessages[language].PROFILE_UPDATED, {
-            user: userData(user),
+            user: userData(userProfile),
             stats: {
                 streak: profileStats.streak,
                 xp: profileStats.xp,
