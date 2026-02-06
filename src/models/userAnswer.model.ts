@@ -10,7 +10,7 @@ export interface UserResponseDocument extends Document {
   readingId:Types.ObjectId;
   userId: Types.ObjectId; // reference to User
   quizId: Types.ObjectId; // reference to QuizTest
-  type: "quiz" | "test" | "quest";
+  type: "quiz" | "test" | "reading";
   answers: AnswerItem[];
   timeTaken: number; // in seconds
   points: number; // correct * 10

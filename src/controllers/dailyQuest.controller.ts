@@ -109,6 +109,8 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       .map(q => q.readingId?._id || q?.readingId)
       .filter(Boolean);
 
+      console.log("readingId",readingIds)
+
     // ------------------------------
     // 3️⃣ Fetch user answers per quiz
     // ------------------------------
@@ -124,10 +126,11 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       // answers: 1,
 
     });
-    const userReadingReponses = await ReadingProgressModel.find({
+    const userReadingReponses = await UserResponseModel.find({
       userId,
       readingId: { $in: readingIds },
     }).lean();
+    console.log("userREading REsponse",userReadingReponses)
     // ------------------------------
     // 4️⃣ Merge everything together
     // ------------------------------
@@ -142,14 +145,15 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       );
 
       // 📖 Find reading progress
+      console.log("userReadingResponses ",userReadingReponses)
       const readingProgress = userReadingReponses.find(
         (r) => r.readingId?.toString() === quest?.readingId?._id?.toString()
       );
+      console.log("ReadingProgress.....",readingProgress)
 
       return {
         ...quest,
 
-        // ⭐ Separate progress
         userProgress: {
           quiz: quizResponse
             ? {
@@ -163,7 +167,7 @@ export const getDailyQuest = async (req: Request, res: Response) => {
           reading: readingProgress
             ? {
               status: readingProgress.status, // assuming field exists
-              progress: readingProgress.progress, // or percentage/completed flag
+              // progress: readingProgress.progress, // or percentage/completed flag
             }
             : null,
         },
