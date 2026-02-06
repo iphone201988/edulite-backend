@@ -29,9 +29,11 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
             success:false
         });
     }
+    
 
     const user = await User.findById(decoded.id);
-    if (!user) {
+    console.log("user...",user)
+    if (!user || user?.isDeleted) {
       return res
         .status(401)
         .json({

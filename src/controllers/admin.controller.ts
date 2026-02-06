@@ -286,7 +286,7 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
         await user.save();
 
         // Or hard delete
-        // await User.findByIdAndDelete(id);
+        await User.findByIdAndDelete(id);
 
         SUCCESS(res, 200, successMessages[language].USER_DELETED_SUCCESS, {
             deletedUser: { id: user._id, name: user.name, email: user.email }
