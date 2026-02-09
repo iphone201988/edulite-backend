@@ -26,8 +26,8 @@ export const userData = (user: any, token?: any) => {
     location: user.location,
     status: user.status,
     createdAt:user.createdAt,
-    grade:user.grade|| "",
-    gradeId:user.gradeId || "",
+    grade:user.grade,
+    gradeId:user.gradeId ,
   };
 
   // only add token if passed
