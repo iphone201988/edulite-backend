@@ -22,7 +22,7 @@ export const submitUserResponseSchema = {
           }),
         })
       )
-      .min(1)
+      // .min(1)
       .required()
       .messages({
         "array.base": "answers must be an array",
