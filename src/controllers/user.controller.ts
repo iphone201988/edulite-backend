@@ -389,7 +389,7 @@ const changePassword = async (req: Request, res: Response, next: NextFunction): 
         if (!isOldPasswordCorrect) {
 
             throw new ErrorHandler(
-                errorMessages[language].WRONG("Password"),
+                "Old Password is Incorrect",
                 400
             )
         }
