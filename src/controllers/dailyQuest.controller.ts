@@ -30,6 +30,25 @@ export const createDailyQuest = async (req: Request, res: Response) => {
       if (!readingExists) return res.status(404).json({ message: "Reading not found." });
     }
 
+    // ✅ Check for duplicate quest using date range
+    const startOfDay = new Date(date as string);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date as string);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingQuest = await DailyQuestModel.findOne({
+      date: { $gte: startOfDay, $lte: endOfDay },
+      type,
+      class: className,
+      ...(type === "questQuiz" ? { testQuizId } : {}),
+      ...(type === "questReading" ? { readingId } : {}),
+    });
+
+    if (existingQuest) {
+      return res.status(400).json({ message: "A daily quest with this content already exists for the selected date and class." });
+    }
+
     // ✅ Create Daily Quest
     const newQuest = await DailyQuestModel.create({
       date,
@@ -109,7 +128,7 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       .map(q => q.readingId?._id || q?.readingId)
       .filter(Boolean);
 
-      console.log("readingId",readingIds)
+    console.log("readingId", readingIds)
 
     // ------------------------------
     // 3️⃣ Fetch user answers per quiz
@@ -130,7 +149,7 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       userId,
       readingId: { $in: readingIds },
     }).lean();
-    console.log("userREading REsponse",userReadingReponses)
+    console.log("userREading REsponse", userReadingReponses)
     // ------------------------------
     // 4️⃣ Merge everything together
     // ------------------------------
@@ -145,11 +164,11 @@ export const getDailyQuest = async (req: Request, res: Response) => {
       );
 
       // 📖 Find reading progress
-      console.log("userReadingResponses ",userReadingReponses)
+      console.log("userReadingResponses ", userReadingReponses)
       const readingProgress = userReadingReponses.find(
         (r) => r.readingId?.toString() === quest?.readingId?._id?.toString()
       );
-      console.log("ReadingProgress.....",readingProgress)
+      console.log("ReadingProgress.....", readingProgress)
 
       return {
         ...quest,
