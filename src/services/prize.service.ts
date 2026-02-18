@@ -1,7 +1,8 @@
-// controllers/prize.controller.ts
 import Prize from "../models/prize.model";
 import UserResponseModel from "../models/userAnswer.model";
 import UserPrize from "../models/userPrize.model";
+import { NotificationType } from "../utils/enums";
+import { sendPushNotifications } from "./notification.service";
 
 /**
  * Checks user's completed quizzes/tests and assigns eligible prizes
@@ -27,6 +28,14 @@ export const checkAndAssignQuizPrizes = async (userId: string) => {
                 });
                 if (!alreadyAssigned) {
                     await UserPrize.create({ user: userId, prize: prize._id });
+                    const payload = {
+                        title: "NEW PRIZE UNLOCKED",
+                        description: `Check Your New Prize in prizes section`,
+                        type: NotificationType.BADGE,
+                        data:{prize}
+                    }
+                    await sendPushNotifications([userId], payload);
+                    
                 }
             }
         }
