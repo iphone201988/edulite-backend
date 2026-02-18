@@ -8,6 +8,7 @@ export interface INotification extends Document {
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
+  data:any
 }
 
 const notificationSchema = new Schema<INotification>(
@@ -38,6 +39,11 @@ const notificationSchema = new Schema<INotification>(
       default: false,
       index: true,
     },
+    data:{
+      type:JSON,
+      defaut:{}
+    }
+
   },
   {
     timestamps: true,

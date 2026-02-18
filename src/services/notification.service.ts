@@ -37,6 +37,7 @@ export async function sendPushNotifications(
       title: payload.title,
       description: payload.description,
       type: payload.type,
+      data:payload.data
     }));
 
     await Notification.insertMany(notifications);
